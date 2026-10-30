@@ -1,0 +1,69 @@
+name: Deploy Melos WebApp no GitHub Pages
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Detectar diretório e injetar GitHub Actions Secrets no env-config.js
+        id: prepare
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.VITE_GOOGLE_DRIVE_FOLDER_ID }}
+          VITE_APP_PASSWORD: ${{ secrets.VITE_APP_PASSWORD }}
+        run: |
+          APP_DIR="."
+          if [ ! -f "index.html" ] && [ -f "melos-webapp/index.html" ]; then
+            APP_DIR="melos-webapp"
+          fi
+          echo "app_dir=$APP_DIR" >> "$GITHUB_OUTPUT"
+          python3 - "$APP_DIR/env-config.js" << 'PY'
+          import json, os, sys
+          target = sys.argv[1]
+          env_data = {
+              "VITE_SUPABASE_URL": os.environ.get("VITE_SUPABASE_URL", "").strip(),
+              "VITE_SUPABASE_ANON_KEY": os.environ.get("VITE_SUPABASE_ANON_KEY", "").strip(),
+              "VITE_GOOGLE_CLIENT_ID": os.environ.get("VITE_GOOGLE_CLIENT_ID", "").strip(),
+              "VITE_GOOGLE_DRIVE_FOLDER_ID": os.environ.get("VITE_GOOGLE_DRIVE_FOLDER_ID", "").strip(),
+              "VITE_APP_PASSWORD": os.environ.get("VITE_APP_PASSWORD", "").strip(),
+              "__INJECTED_AT__": "github-actions"
+          }
+          with open(target, "w", encoding="utf-8") as f:
+              f.write("// Gerado automaticamente pelo GitHub Actions\n")
+              f.write("window.__MELOS_ENV__ = " + json.dumps(env_data, indent=2) + ";\n")
+          for k in ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY", "VITE_GOOGLE_CLIENT_ID", "VITE_GOOGLE_DRIVE_FOLDER_ID", "VITE_APP_PASSWORD"]:
+              print(f"Secret {k}: {'CONFIGURADO' if env_data[k] else 'VAZIO'}")
+          PY
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar artefato para o GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.prepare.outputs.app_dir }}
+
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

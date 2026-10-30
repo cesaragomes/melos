@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Melos — Biblioteca Privada e Gerenciador de Partituras</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="./env-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parchment: {
+              50: '#FCF9F2',
+              100: '#F7F1E3',
+              200: '#EFE5CE',
+              300: '#E3D3B2',
+              400: '#D2BA8E',
+            },
+            wood: {
+              600: '#6E472B',
+              700: '#54341E',
+              800: '#3D2414',
+              900: '#28170C',
+            },
+            amberbrass: {
+              400: '#E09F3E',
+              500: '#C88224',
+              600: '#A86816',
+              700: '#854F0E',
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #F7F1E3;
+      color: #28170C;
+      font-family: 'Inter', sans-serif;
+    }
+    .font-editorial {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .parchment-card {
+      background: linear-gradient(180deg, #FCF9F2 0%, #F7F1E3 100%);
+      border: 1px solid #E3D3B2;
+      box-shadow: 0 4px 16px -4px rgba(61, 36, 20, 0.08), 0 2px 6px -1px rgba(61, 36, 20, 0.04);
+    }
+    .wood-header {
+      background: linear-gradient(135deg, #28170C 0%, #3D2414 55%, #54341E 100%);
+      border-bottom: 2px solid #C88224;
+    }
+    .brass-btn {
+      background: linear-gradient(135deg, #D89432 0%, #B36E15 100%);
+      color: #FCF9F2;
+      box-shadow: 0 2px 8px rgba(168, 104, 22, 0.3);
+    }
+    .brass-btn:hover {
+      background: linear-gradient(135deg, #E2A040 0%, #C47B1B 100%);
+    }
+    .staff-lines {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 9px,
+        rgba(110, 71, 43, 0.14) 9px,
+        rgba(110, 71, 43, 0.14) 10px
+      );
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F7F1E3;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D2BA8E;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6E472B;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amberbrass-400 selection:text-wood-900">
+
+  <!-- TELA DE BLOQUEIO PRIVADO (SENHA DO CASAL / GITHUB SECRETS) -->
+  <div id="lockScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-wood-900/95 backdrop-blur-md">
+    <div class="parchment-card max-w-md w-full rounded-2xl overflow-hidden border-2 border-amberbrass-500/50 shadow-2xl">
+      <div class="relative h-36 overflow-hidden">
+        <img src="./public/assets/hero.jpg" alt="Melos Conservatório" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-wood-900 via-wood-900/60 to-transparent"></div>
+        <div class="absolute bottom-3 left-5 right-5 flex items-center gap-3.5">
+          <img src="./public/assets/logo.jpg" alt="Emblema Melos" class="w-14 h-14 rounded-full border-2 border-amberbrass-400 shadow-lg object-cover bg-parchment-100" />
+          <div>
+            <span class="text-[11px] uppercase tracking-widest text-amberbrass-400 font-semibold block">Acervo Musical Privado</span>
+            <h1 class="font-editorial text-3xl font-bold text-parchment-50 tracking-wide">Melos</h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="bg-parchment-200/70 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-700 leading-relaxed">
+          <p class="font-semibold text-wood-900 mb-1 flex items-center gap-1.5">
+            <span>🔒</span> Biblioteca Exclusiva (Acesso Restrito)
+          </p>
+          <p>Este acervo é de uso estritamente privado para estudo e prática musical. Digite a senha configurada no <strong>GitHub Actions Secrets</strong> (<code class="bg-parchment-100 px-1 py-0.5 rounded text-wood-800">VITE_APP_PASSWORD</code>).</p>
+          <p id="demoPasswordHint" class="mt-1.5 text-amberbrass-700 font-medium">💡 Modo Preview: use a senha <code class="bg-parchment-50 px-1.5 py-0.5 rounded border border-amberbrass-400/50 font-bold">melos2026</code> ou clique em Entrar.</p>
+        </div>
+
+        <form id="unlockForm" class="space-y-3">
+          <div>
+            <label for="unlockProfile" class="block text-xs font-semibold uppercase tracking-wider text-wood-700 mb-1">Quem está acessando?</label>
+            <select id="unlockProfile" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3.5 py-2.5 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+              <option value="César">🎹 César (Administrador)</option>
+              <option value="Namorada">🎻 Minha Namorada (Co-curadora)</option>
+            </select>
+          </div>
+          <div>
+            <label for="unlockPasswordInput" class="block text-xs font-semibold uppercase tracking-wider text-wood-700 mb-1">Senha de Acesso ao Acervo</label>
+            <input id="unlockPasswordInput" type="password" value="melos2026" placeholder="Digite a senha privada..." class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3.5 py-2.5 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+          </div>
+          <p id="unlockErrorMsg" class="hidden text-xs font-medium text-red-700 bg-red-100/80 border border-red-300 rounded-lg px-3 py-2"></p>
+          <button type="submit" id="unlockSubmitBtn" class="w-full brass-btn font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
+            <span>Desbloquear Biblioteca Melos</span>
+            <span>→</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CABEÇALHO PRINCIPAL EM MADEIRA DE LUTHIERIA E LATÃO DOURADO -->
+  <header class="wood-header text-parchment-50 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img src="./public/assets/logo.jpg" alt="Logo Melos" class="w-11 h-11 rounded-full border-2 border-amberbrass-400 shadow-md object-cover bg-parchment-100" />
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-editorial text-2xl sm:text-3xl font-bold tracking-wide text-parchment-50">Melos</span>
+            <span class="text-[11px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-amberbrass-500/25 border border-amberbrass-400/50 text-amberbrass-400 font-medium">Acervo Privado</span>
+          </div>
+          <p class="text-xs text-parchment-200/80 hidden sm:block">Gerenciador de Partituras em Nuvem • Google Drive &amp; Supabase</p>
+        </div>
+      </div>
+
+      <!-- Navegação de Abas -->
+      <nav class="flex items-center gap-1.5 bg-wood-900/70 p-1 rounded-xl border border-wood-600">
+        <button type="button" id="navTabLibrary" data-tab="library" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 bg-amberbrass-500 text-parchment-50 shadow">
+          <span>🎼</span>
+          <span>Biblioteca Principal</span>
+          <span id="badgeCategorizedCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-wood-900/40 font-semibold">0</span>
+        </button>
+        <button type="button" id="navTabInbox" data-tab="inbox" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 text-parchment-200 hover:text-parchment-50 hover:bg-wood-800">
+          <span>📥</span>
+          <span>Inbox &amp; Upload</span>
+          <span id="badgeInboxCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-amberbrass-500/30 text-amberbrass-400 font-semibold">0</span>
+        </button>
+        <button type="button" id="navTabTriage" data-tab="triage" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 text-parchment-200 hover:text-parchment-50 hover:bg-wood-800">
+          <span>⚖️</span>
+          <span>Triagem Split-Screen</span>
+        </button>
+      </nav>
+
+      <!-- Ações e Status da Nuvem -->
+      <div class="flex items-center gap-2">
+        <button type="button" id="openQuickUploadBtn" class="brass-btn px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+          <span>＋</span>
+          <span class="hidden md:inline">Enviar PDFs</span>
+        </button>
+        <button type="button" id="openConfigModalBtn" class="px-3 py-2 rounded-xl text-xs font-medium bg-wood-800 hover:bg-wood-700 text-parchment-100 border border-wood-600 transition flex items-center gap-1.5" title="Configurações de API (Supabase, Google Drive e GitHub Secrets)">
+          <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="cloudStatusLabel">APIs &amp; Segredos</span>
+        </button>
+        <button type="button" id="lockAppBtn" class="px-2.5 py-2 rounded-xl text-xs bg-wood-800/80 hover:bg-wood-700 text-parchment-200 border border-wood-600 transition" title="Bloquear tela">
+          🔒
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- FAIXA HERO EDITORIAL (EXIBIDA NA BIBLIOTECA PRINCIPAL) -->
+  <section id="heroBannerSection" class="relative border-b border-parchment-300 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+      <div class="parchment-card rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+        <div class="p-5 sm:p-6 lg:col-span-7 flex flex-col justify-between space-y-4">
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-amberbrass-700 font-semibold uppercase tracking-widest">
+              <span>Edição de Conservatório</span>
+              <span>•</span>
+              <span id="activeUserGreeting">Sessão: César</span>
+            </div>
+            <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-wood-900 leading-tight">
+              Catálogo Musical Indexado &amp; Estante Digital
+            </h2>
+            <p class="text-xs sm:text-sm text-wood-700 leading-relaxed">
+              Pesquise instantaneamente por obra, compositor, arranjador, tonalidade, formação instrumental ou nível técnico. Todos os PDFs permanecem sincronizados na sua pasta privada do Google Drive.
+            </p>
+          </div>
+
+          <!-- Resumo rápido de estatísticas -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
+              <span class="text-[11px] text-wood-600 block">Total no Acervo</span>
+              <strong id="statTotalScores" class="font-editorial text-2xl text-wood-900">0</strong>
+            </div>
+            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
+              <span class="text-[11px] text-wood-600 block">Catalogadas</span>
+              <strong id="statCategorized" class="font-editorial text-2xl text-amberbrass-700">0</strong>
+            </div>
+            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
+              <span class="text-[11px] text-wood-600 block">Na Fila (Inbox)</span>
+              <strong id="statPendingInbox" class="font-editorial text-2xl text-wood-800">0</strong>
+            </div>
+            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
+              <span class="text-[11px] text-wood-600 block">Favoritas do Casal</span>
+              <strong id="statFavorites" class="font-editorial text-2xl text-amberbrass-600">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 relative min-h-[160px] sm:min-h-[200px]">
+          <img src="./public/assets/hero.jpg" alt="Estante de Partituras Clássica" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-r from-parchment-100 via-parchment-100/20 to-transparent lg:block hidden"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
+
+    <!-- ========================================================= -->
+    <!-- ABA 1: BIBLIOTECA PRINCIPAL (BUSCA REATIVA + FILTROS)     -->
+    <!-- ========================================================= -->
+    <section id="viewLibrary" class="space-y-5">
+      <!-- Barra de Busca Global e Filtros Facetados -->
+      <div class="parchment-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col md:flex-row gap-3">
+          <!-- Busca Universal Reativa (com debounce) -->
+          <div class="relative flex-1">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-wood-600">🔍</span>
+            <input
+              id="globalSearchInput"
+              type="search"
+              placeholder="Buscar por título da obra, compositor, arranjador, estilo ou tag (ex.: Chopin, Bossa Nova, Recital)..."
+              class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-parchment-50 border border-parchment-300 text-sm text-wood-900 placeholder-wood-600/70 focus:outline-none focus:ring-2 focus:ring-amberbrass-500"
+            />
+            <button type="button" id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-wood-600 hover:text-wood-900">✕</button>
+          </div>
+
+          <!-- Alternância Grade / Tabela + Nova Partitura Manual -->
+          <div class="flex items-center gap-2">
+            <div class="flex bg-parchment-200 p-1 rounded-xl border border-parchment-300">
+              <button type="button" id="viewModeGridBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition">
+                Grade
+              </button>
+              <button type="button" id="viewModeTableBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition">
+                Tabela
+              </button>
+            </div>
+            <button type="button" id="newManualScoreBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition">
+              ＋ Catalogar Manual
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros Facetados Combinados (Formação, Tonalidade, Dificuldade, Estilo) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+          <div>
+            <label for="filterInstrumentation" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Formação Instrumental</label>
+            <select id="filterInstrumentation" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+              <option value="">Todas as formações</option>
+              <option value="Piano Solo">Piano Solo</option>
+              <option value="Piano a 4 mãos">Piano a 4 mãos</option>
+              <option value="Voz e Piano">Voz e Piano</option>
+              <option value="Violino e Piano">Violino e Piano</option>
+              <option value="Violão / Guitarra">Violão / Guitarra</option>
+              <option value="Partitura Completa">Partitura Completa</option>
+              <option value="Quarteto de Cordas">Quarteto de Cordas</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterKey" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Tonalidade (Key)</label>
+            <select id="filterKey" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+              <option value="">Todas as tonalidades</option>
+              <option value="C Major">C Major (Dó Maior)</option>
+              <option value="G Major">G Major (Sol Maior)</option>
+              <option value="D Major">D Major (Ré Maior)</option>
+              <option value="F Major">F Major (Fá Maior)</option>
+              <option value="Bb Major">Bb Major (Si♭ Maior)</option>
+              <option value="Eb Major">Eb Major (Mi♭ Maior)</option>
+              <option value="Db Major">Db Major (Ré♭ Maior)</option>
+              <option value="A minor">A minor (Lá menor)</option>
+              <option value="E minor">E minor (Mi menor)</option>
+              <option value="D minor">D minor (Ré menor)</option>
+              <option value="C# minor">C# minor (Dó♯ menor)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterDifficulty" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Nível Técnico</label>
+            <select id="filterDifficulty" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+              <option value="">Todos os níveis</option>
+              <option value="Iniciante">Iniciante</option>
+              <option value="Intermediário">Intermediário</option>
+              <option value="Avançado">Avançado</option>
+              <option value="Virtuoso">Virtuoso</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterGenre" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Gênero / Período</label>
+            <select id="filterGenre" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+              <option value="">Todos os estilos</option>
+              <option value="Barroco">Barroco</option>
+              <option value="Clássico">Clássico</option>
+              <option value="Romântico">Romântico</option>
+              <option value="Impressionista">Impressionista</option>
+              <option value="MPB / Bossa Nova">MPB / Bossa Nova</option>
+              <option value="Jazz">Jazz</option>
+              <option value="Choro">Choro</option>
+              <option value="Trilha Sonora / Videogames">Trilha Sonora / Videogames</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chips de Tags Rápidas e Botão Limpar Filtros -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-parchment-200">
+          <div class="flex flex-wrap items-center gap-1.5" id="tagChipsContainer">
+            <span class="text-[11px] font-semibold text-wood-600 mr-1">Tags rápidas:</span>
+            <button type="button" data-tag-chip="" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-wood-800 text-parchment-50 transition">Todas</button>
+            <button type="button" data-tag-chip="favoritas" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">★ Favoritas</button>
+            <button type="button" data-tag-chip="repertório 2026" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Repertório 2026</button>
+            <button type="button" data-tag-chip="dueto casal" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Dueto Casal</button>
+            <button type="button" data-tag-chip="estudo" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Estudo</button>
+            <button type="button" data-tag-chip="recital" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Recital</button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span id="resultsCounterText" class="text-xs text-wood-600 font-medium">Mostrando 0 partituras</span>
+            <button type="button" id="resetFiltersBtn" class="text-xs font-semibold text-amberbrass-700 hover:text-amberbrass-600 underline">
+              Limpar filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grade de Partituras (ScoreGrid) -->
+      <div id="scoreGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+      <!-- Tabela de Partituras (ScoreTable) -->
+      <div id="scoreTableContainer" class="hidden parchment-card rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-parchment-200/90 border-b border-parchment-300 text-[11px] font-semibold uppercase tracking-wider text-wood-700">
+                <th class="py-3 px-4">Obra Musical</th>
+                <th class="py-3 px-4">Compositor / Arranjador</th>
+                <th class="py-3 px-4">Formação</th>
+                <th class="py-3 px-4">Tom</th>
+                <th class="py-3 px-4">Nível</th>
+                <th class="py-3 px-4">Estilo &amp; Tags</th>
+                <th class="py-3 px-4 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="scoreTableBody" class="divide-y divide-parchment-200 text-xs sm:text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- ABA 2: UPLOAD EM LOTE & FILA DE ENTRADA (INBOX)           -->
+    <!-- ========================================================= -->
+    <section id="viewInbox" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Zona de Bulk Upload (Arrastar e Soltar múltiplos PDFs) -->
+        <div class="lg:col-span-7 parchment-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-widest text-amberbrass-700">Fluxo de Ingestão Incremental</span>
+            <h2 class="font-editorial text-3xl font-bold text-wood-900 mt-1">Upload em Lote para o Google Drive (/Inbox)</h2>
+            <p class="text-xs sm:text-sm text-wood-700 mt-1 leading-relaxed">
+              Selecione múltiplos arquivos PDF ou arraste uma pasta inteira. O Melos extrai automaticamente sugestões de <strong>Compositor - Obra (Arranjador).pdf</strong>, envia os PDFs para a pasta <code class="bg-parchment-200 px-1.5 py-0.5 rounded">/Partituras/Inbox</code> no Google Drive e registra tudo na fila de triagem.
+            </p>
+          </div>
+
+          <div
+            id="dropZoneArea"
+            class="border-2 border-dashed border-amberbrass-500/70 hover:border-amberbrass-600 rounded-2xl p-8 text-center bg-parchment-100/70 transition cursor-pointer flex flex-col items-center justify-center space-y-3"
+          >
+            <div class="w-14 h-14 rounded-2xl bg-amberbrass-500/15 border border-amberbrass-500/40 flex items-center justify-center text-2xl">
+              📄
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-wood-900">Arraste e solte múltiplos PDFs de partituras aqui</p>
+              <p class="text-xs text-wood-600 mt-0.5">ou clique para selecionar arquivos PDF do seu computador/tablet</p>
+            </div>
+            <input id="bulkPdfInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <button type="button" id="selectPdfFilesBtn" class="brass-btn px-4 py-2 rounded-xl text-xs font-semibold transition">
+                Selecionar Arquivos PDF
+              </button>
+              <button type="button" id="simulateBatchUploadBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+                ✨ Simular Lote de 3 PDFs de Teste
+              </button>
+            </div>
+          </div>
+
+          <!-- Barra de Progresso de Upload -->
+          <div id="uploadProgressBox" class="hidden bg-parchment-200/80 border border-parchment-300 rounded-xl p-4 space-y-2">
+            <div class="flex items-center justify-between text-xs font-semibold text-wood-800">
+              <span id="uploadProgressText">Enviando arquivos para o Google Drive...</span>
+              <span id="uploadProgressPercent">0%</span>
+            </div>
+            <div class="w-full h-2 bg-parchment-300 rounded-full overflow-hidden">
+              <div id="uploadProgressBar" class="h-full bg-amberbrass-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Visual da Bandeja de Manuscritos (Inbox) -->
+        <div class="lg:col-span-5 parchment-card rounded-2xl overflow-hidden flex flex-col justify-between">
+          <div class="relative h-48 overflow-hidden">
+            <img src="./public/assets/inbox.jpg" alt="Bandeja de Manuscritos Inbox" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-wood-900/85 via-wood-900/30 to-transparent"></div>
+            <div class="absolute bottom-3 left-4 right-4 text-parchment-50">
+              <span class="text-[11px] uppercase tracking-widest text-amberbrass-400 font-semibold">Bandeja de Triagem</span>
+              <h3 class="font-editorial text-2xl font-bold">Partituras Aguardando Catalogação</h3>
+            </div>
+          </div>
+          <div class="p-5 space-y-3 flex-1 flex flex-col justify-between">
+            <p class="text-xs text-wood-700 leading-relaxed">
+              As partituras enviadas recebem <code class="bg-parchment-200 px-1 py-0.5 rounded">is_categorized = false</code> até que você ou sua namorada revisem os metadados na tela dividida (Split-Screen).
+            </p>
+            <div class="flex items-center justify-between bg-parchment-200/70 rounded-xl p-3 border border-parchment-300">
+              <div>
+                <span class="text-xs text-wood-600 block">Pendentes na Fila</span>
+                <strong id="inboxCardCounter" class="font-editorial text-2xl text-wood-900">0 arquivos</strong>
+              </div>
+              <button type="button" id="startTriageFromInboxBtn" class="brass-btn px-4 py-2.5 rounded-xl text-xs font-semibold transition">
+                Iniciar Triagem Split-Screen →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Partituras Não-Categorizadas (InboxList) -->
+      <div class="parchment-card rounded-2xl p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="font-editorial text-2xl font-bold text-wood-900">Fila de Não-Categorizadas (Inbox)</h3>
+            <p class="text-xs text-wood-600">Clique em "Catalogar em Split-Screen" em qualquer item para visualizar o PDF ao lado do formulário.</p>
+          </div>
+        </div>
+        <div id="inboxListContainer" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- ABA 3: TELA DE TRIAGEM E EDIÇÃO DIVIDIDA (SPLIT SCREEN)   -->
+    <!-- ========================================================= -->
+    <section id="viewTriage" class="hidden space-y-4">
+      <!-- Barra Superior da Triagem com Navegação Sequencial e Atalhos -->
+      <div class="parchment-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl bg-amberbrass-500/20 border border-amberbrass-500/40 flex items-center justify-center text-lg">⚖️</span>
+          <div>
+            <h2 class="font-editorial text-2xl font-bold text-wood-900">Estação de Triagem &amp; Catalogação (Split-Screen)</h2>
+            <p id="triageQueuePositionText" class="text-xs text-wood-600">Selecione uma partitura da fila para catalogar</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="hidden xl:inline-block text-[11px] text-wood-600 bg-parchment-200 px-2.5 py-1 rounded-lg border border-parchment-300">
+            Atalhos: <strong>Alt + ←/→</strong> trocar PDF • <strong>Ctrl + Enter</strong> salvar e aprovar
+          </span>
+          <button type="button" id="prevTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+            ← Anterior
+          </button>
+          <select id="triageSelectorDropdown" class="rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-1.5 text-xs text-wood-900 max-w-xs focus:outline-none focus:ring-2 focus:ring-amberbrass-500"></select>
+          <button type="button" id="nextTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+            Próxima →
+          </button>
+        </div>
+      </div>
+
+      <!-- Container Dividido (Esquerda: PDF Viewer / Direita: ScoreForm) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- Painel de Visualização (Esquerda - 7 colunas) -->
+        <div class="lg:col-span-7 parchment-card rounded-2xl overflow-hidden flex flex-col h-[640px]">
+          <div class="bg-wood-800 text-parchment-100 px-4 py-2.5 flex items-center justify-between text-xs border-b border-amberbrass-500/40">
+            <div class="flex items-center gap-2 truncate">
+              <span>📄</span>
+              <span id="triageFilenameHeader" class="font-medium truncate">arquivo_original.pdf</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" id="toggleTriageViewerModeBtn" class="px-2.5 py-1 rounded bg-wood-700 hover:bg-wood-600 text-[11px] text-amberbrass-400 transition">
+                Alternar Drive Iframe / Folha Musical
+              </button>
+            </div>
+          </div>
+
+          <!-- Visualizador Híbrido: Iframe Google Drive + Renderizador de Partitura Clássica -->
+          <div id="triagePdfContainer" class="flex-1 bg-parchment-100 relative overflow-y-auto flex flex-col">
+            <!-- Iframe Real do Google Drive PDF Viewer -->
+            <iframe
+              id="triageDriveIframe"
+              title="Google Drive PDF Viewer"
+              class="w-full h-full hidden border-0"
+              allow="autoplay"
+            ></iframe>
+
+            <!-- Folha de Partitura de Alta Resolução (Preview Integrado quando arquivo é local/demo) -->
+            <div id="triageSheetPreviewFallback" class="p-6 sm:p-8 flex-1 flex flex-col justify-between bg-[#FCF9F2] text-wood-900">
+              <div class="border-2 border-wood-800/30 p-6 rounded-xl flex-1 flex flex-col justify-between space-y-6">
+                <div class="text-center border-b border-parchment-300 pb-4 space-y-1">
+                  <span id="previewSheetGenreBadge" class="text-[10px] uppercase tracking-widest text-amberbrass-700 font-semibold">Edição Urtext Digital • Melos</span>
+                  <h3 id="previewSheetTitle" class="font-editorial text-3xl font-bold text-wood-900">Título da Obra</h3>
+                  <p id="previewSheetComposer" class="text-xs italic text-wood-700">Compositor • Arranjador</p>
+                  <div class="flex items-center justify-center gap-3 pt-1 text-[11px] text-wood-600">
+                    <span id="previewSheetInstrumentation">Piano Solo</span>
+                    <span>•</span>
+                    <span id="previewSheetKey">C Major</span>
+                    <span>•</span>
+                    <span id="previewSheetDifficulty">Intermediário</span>
+                  </div>
+                </div>
+
+                <!-- Pautas Musicais Estilizadas (Renderização SVG de Alta Nitidez) -->
+                <div class="space-y-6 py-2">
+                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                    <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
+                    <span class="text-xs font-serif italic text-wood-700 mr-4">Andante cantabile (♩ = 76)</span>
+                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                      <span>♩</span><span>♫</span><span>♩.</span><span>♪</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span>
+                    </div>
+                  </div>
+                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                    <span class="text-2xl text-wood-800 select-none mr-4">𝄢</span>
+                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                      <span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>♩</span><span>𝅗𝅥</span>
+                    </div>
+                  </div>
+                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                    <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
+                    <span class="text-xs font-serif italic text-wood-700 mr-4">dolce espressivo</span>
+                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                      <span>♫</span><span>♫</span><span>♩</span><span>♩</span><span>𝅗𝅥</span><span>♩</span><span>𝄽</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-parchment-200/80 rounded-xl p-3 border border-parchment-300 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div>
+                    <span class="font-semibold text-wood-900">Google Drive File ID:</span>
+                    <code id="previewSheetDriveId" class="ml-1 bg-parchment-50 px-1.5 py-0.5 rounded text-wood-700">1AbC...</code>
+                  </div>
+                  <span class="text-[11px] text-wood-600">Embed: <code>https://drive.google.com/file/d/{id}/preview</code></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel de Metadados (Direita - 5 colunas) -->
+        <div class="lg:col-span-5 parchment-card rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-parchment-200 pb-3">
+            <div>
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-amberbrass-700">Formulário de Catalogação</span>
+              <h3 class="font-editorial text-2xl font-bold text-wood-900">Metadados Musicais</h3>
+            </div>
+            <span id="triageStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+              Pendente (Inbox)
+            </span>
+          </div>
+
+          <form id="triageMetadataForm" class="space-y-3.5">
+            <input type="hidden" id="triageScoreId" />
+
+            <div>
+              <label for="triageTitle" class="block text-xs font-semibold text-wood-800 mb-1">Título da Obra / Peça *</label>
+              <input id="triageTitle" type="text" required placeholder="Ex.: Clair de Lune (Suite Bergamasque)" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="triageComposer" class="block text-xs font-semibold text-wood-800 mb-1">Compositor / Autor *</label>
+                <input id="triageComposer" list="composerSuggestions" type="text" required placeholder="Ex.: Claude Debussy" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+                <datalist id="composerSuggestions">
+                  <option value="Frédéric Chopin"></option>
+                  <option value="Johann Sebastian Bach"></option>
+                  <option value="Claude Debussy"></option>
+                  <option value="Heitor Villa-Lobos"></option>
+                  <option value="Tom Jobim"></option>
+                  <option value="Ludwig van Beethoven"></option>
+                  <option value="Ernesto Nazareth"></option>
+                  <option value="Joe Hisaishi"></option>
+                </datalist>
+              </div>
+              <div>
+                <label for="triageArranger" class="block text-xs font-semibold text-wood-800 mb-1">Arranjador / Transcritor</label>
+                <input id="triageArranger" type="text" placeholder="Ex.: Edição Henle / Arranjo próprio" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="triageInstrumentation" class="block text-xs font-semibold text-wood-800 mb-1">Formação Instrumental</label>
+                <select id="triageInstrumentation" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                  <option value="Piano Solo">Piano Solo</option>
+                  <option value="Piano a 4 mãos">Piano a 4 mãos</option>
+                  <option value="Voz e Piano">Voz e Piano</option>
+                  <option value="Violino e Piano">Violino e Piano</option>
+                  <option value="Violão / Guitarra">Violão / Guitarra</option>
+                  <option value="Partitura Completa">Partitura Completa</option>
+                  <option value="Quarteto de Cordas">Quarteto de Cordas</option>
+                </select>
+              </div>
+              <div>
+                <label for="triageMusicalKey" class="block text-xs font-semibold text-wood-800 mb-1">Tonalidade (Musical Key)</label>
+                <select id="triageMusicalKey" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                  <option value="C Major">C Major (Dó Maior)</option>
+                  <option value="G Major">G Major (Sol Maior)</option>
+                  <option value="D Major">D Major (Ré Maior)</option>
+                  <option value="F Major">F Major (Fá Maior)</option>
+                  <option value="Bb Major">Bb Major (Si♭ Maior)</option>
+                  <option value="Eb Major">Eb Major (Mi♭ Maior)</option>
+                  <option value="Db Major">Db Major (Ré♭ Maior)</option>
+                  <option value="A minor">A minor (Lá menor)</option>
+                  <option value="E minor">E minor (Mi menor)</option>
+                  <option value="D minor">D minor (Ré menor)</option>
+                  <option value="C# minor">C# minor (Dó♯ menor)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="triageDifficulty" class="block text-xs font-semibold text-wood-800 mb-1">Grau de Exigência Técnica</label>
+                <select id="triageDifficulty" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                  <option value="Iniciante">Iniciante</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                  <option value="Virtuoso">Virtuoso</option>
+                </select>
+              </div>
+              <div>
+                <label for="triageGenre" class="block text-xs font-semibold text-wood-800 mb-1">Gênero / Período</label>
+                <select id="triageGenre" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                  <option value="Romântico">Romântico</option>
+                  <option value="Barroco">Barroco</option>
+                  <option value="Clássico">Clássico</option>
+                  <option value="Impressionista">Impressionista</option>
+                  <option value="MPB / Bossa Nova">MPB / Bossa Nova</option>
+                  <option value="Jazz">Jazz</option>
+                  <option value="Choro">Choro</option>
+                  <option value="Trilha Sonora / Videogames">Trilha Sonora / Videogames</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="triageTags" class="block text-xs font-semibold text-wood-800 mb-1">Tags (separadas por vírgula)</label>
+              <input id="triageTags" type="text" placeholder="Ex.: estudo, repertório 2026, favoritas, dueto casal" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+            </div>
+
+            <div>
+              <label for="triageDriveFileId" class="block text-xs font-semibold text-wood-800 mb-1">ID do Arquivo no Google Drive (<code class="text-[11px]">drive_file_id</code>)</label>
+              <input id="triageDriveFileId" type="text" placeholder="Ex.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-1.5 text-xs font-mono text-wood-800 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+            </div>
+
+            <div class="pt-2 flex flex-col sm:flex-row gap-2">
+              <button type="submit" id="saveAndCategorizeBtn" class="flex-1 brass-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5">
+                <span>✓ Salvar e Mover para Biblioteca Principal</span>
+              </button>
+              <button type="button" id="deleteScoreFromTriageBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 transition">
+                Excluir
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE LEITURA EM TELA CHEIA (MODO PEDESTAL / ESTUDO) -->
+  <div id="readerModal" class="hidden fixed inset-0 z-40 bg-wood-900/90 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="parchment-card w-full max-w-5xl h-[90vh] rounded-2xl overflow-hidden flex flex-col border-2 border-amberbrass-500/50 shadow-2xl">
+      <div class="wood-header px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-parchment-50">
+        <div>
+          <h3 id="readerModalTitle" class="font-editorial text-2xl font-bold">Título da Partitura</h3>
+          <p id="readerModalMeta" class="text-xs text-parchment-200">Compositor • Tonalidade • Formação</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="readerDownloadLink" href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amberbrass-500 hover:bg-amberbrass-600 text-parchment-50 transition">
+            ⬇ Abrir / Baixar PDF no Drive
+          </a>
+          <button type="button" id="editFromReaderBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-parchment-100 border border-wood-600 transition">
+            ✎ Editar Metadados
+          </button>
+          <button type="button" id="closeReaderModalBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-200 border border-wood-600 transition">
+            ✕ Fechar
+          </button>
+        </div>
+      </div>
+
+      <div id="readerModalBody" class="flex-1 bg-parchment-100 overflow-y-auto p-6 flex flex-col"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURAÇÃO DE APIs (GITHUB SECRETS, SUPABASE E GOOGLE DRIVE) -->
+  <div id="configModal" class="hidden fixed inset-0 z-40 bg-wood-900/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="parchment-card w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col border-2 border-amberbrass-500/50 shadow-2xl">
+      <div class="wood-header px-5 py-3.5 flex items-center justify-between text-parchment-50">
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-amberbrass-400 font-semibold block">Arquitetura em Nuvem &amp; Segurança</span>
+          <h3 class="font-editorial text-2xl font-bold">Conexão Supabase, Google Drive &amp; GitHub Secrets</h3>
+        </div>
+        <button type="button" id="closeConfigModalBtn" class="px-2.5 py-1 rounded-lg bg-wood-800 text-parchment-200 hover:text-parchment-50 text-xs">✕</button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
+        <div class="bg-parchment-200/80 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-800 leading-relaxed">
+          No <strong>GitHub Pages</strong>, essas variáveis são injetadas automaticamente pelo arquivo <code class="bg-parchment-50 px-1 py-0.5 rounded">.github/workflows/deploy.yml</code> a partir dos seus <strong>GitHub Actions Secrets</strong>. Você também pode colá-las abaixo para testar a conexão em tempo real agora mesmo.
+        </div>
+
+        <form id="apiConfigForm" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="cfgSupabaseUrl" class="block text-xs font-semibold text-wood-800 mb-1">VITE_SUPABASE_URL</label>
+              <input id="cfgSupabaseUrl" type="url" placeholder="https://seu-projeto.supabase.co" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
+            </div>
+            <div>
+              <label for="cfgSupabaseKey" class="block text-xs font-semibold text-wood-800 mb-1">VITE_SUPABASE_ANON_KEY</label>
+              <input id="cfgSupabaseKey" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="cfgGoogleClientId" class="block text-xs font-semibold text-wood-800 mb-1">VITE_GOOGLE_CLIENT_ID (OAuth 2.0)</label>
+              <input id="cfgGoogleClientId" type="text" placeholder="123456-abc.apps.googleusercontent.com" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
+            </div>
+            <div>
+              <label for="cfgDriveFolderId" class="block text-xs font-semibold text-wood-800 mb-1">VITE_GOOGLE_DRIVE_FOLDER_ID (Pasta Inbox)</label>
+              <input id="cfgDriveFolderId" type="text" placeholder="ID da pasta /Partituras/Inbox no Drive" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
+            </div>
+          </div>
+
+          <div>
+            <label for="cfgAppPassword" class="block text-xs font-semibold text-wood-800 mb-1">VITE_APP_PASSWORD (Senha de Acesso do Casal)</label>
+            <input id="cfgAppPassword" type="password" placeholder="Defina a senha privada de desbloqueio" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <button type="button" id="exportCatalogJsonBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition">
+              ⬇ Exportar Backup JSON
+            </button>
+            <div class="flex items-center gap-2">
+              <button type="submit" id="saveConfigBtn" class="brass-btn px-4 py-2 rounded-xl text-xs font-semibold transition">
+                Salvar e Conectar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICAÇÃO -->
+  <div id="toastNotification" class="hidden fixed bottom-5 right-5 z-50 wood-header text-parchment-50 px-4 py-3 rounded-xl shadow-xl border border-amberbrass-400 text-xs font-medium flex items-center gap-2.5 max-w-sm">
+    <span class="text-amberbrass-400 text-base">♪</span>
+    <span id="toastMessageText">Operação realizada com sucesso.</span>
+  </div>
+
+  <!-- RODAPÉ -->
+  <footer class="border-t border-parchment-300 bg-parchment-200/60 py-4 px-4 sm:px-6 text-xs text-wood-600">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <span><strong>Melos</strong> — Biblioteca Privada de Partituras em Nuvem (Fase 1: GitHub Pages + Supabase + Google Drive API v3)</span>
+      <span>Uso exclusivo privado • Pronta para futura migração Docker / Home Server</span>
+    </div>
+  </footer>
+
+  <!-- LÓGICA DA APLICAÇÃO -->
+  <script>
+    (function () {
+      // Variáveis injetáveis pelo GitHub Actions Secrets (via window.__MELOS_ENV__) ou LocalStorage
+      const injectedEnv = window.__MELOS_ENV__ || {};
+      const STORAGE_KEY_SCORES = 'melos_scores_v1';
+      const STORAGE_KEY_CONFIG = 'melos_config_v1';
+      const STORAGE_KEY_SESSION = 'melos_unlocked_v1';
+
+      const INITIAL_SCORES = [
+        {
+          id: 'c1a80101-1111-4222-8333-000000000001',
+          title: 'Clair de Lune (Suite Bergamasque, L. 75)',
+          composer: 'Claude Debussy',
+          arranger: 'Edição Urtext Henle',
+          instrumentation: 'Piano Solo',
+          musical_key: 'Db Major',
+          difficulty: 'Avançado',
+          genre: 'Impressionista',
+          tags: ['favoritas', 'repertório 2026', 'recital'],
+          drive_file_id: '1DebussyClairDeLuneDriveId001',
+          original_filename: 'Claude Debussy - Clair de Lune (Edição Urtext Henle).pdf',
+          view_url: 'https://drive.google.com/file/d/1DebussyClairDeLuneDriveId001/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1DebussyClairDeLuneDriveId001',
+          is_categorized: true,
+          created_at: '2026-10-28T14:20:00Z',
+          updated_at: '2026-10-29T18:10:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000002',
+          title: 'Noturno Op. 9 Nº 2 em Mi Bemol Maior',
+          composer: 'Frédéric Chopin',
+          arranger: 'Jan Ekier (National Edition)',
+          instrumentation: 'Piano Solo',
+          musical_key: 'Eb Major',
+          difficulty: 'Intermediário',
+          genre: 'Romântico',
+          tags: ['favoritas', 'estudo'],
+          drive_file_id: '1ChopinNocturneOp9No2DriveId002',
+          original_filename: 'Frédéric Chopin - Noturno Op. 9 No 2 (Jan Ekier).pdf',
+          view_url: 'https://drive.google.com/file/d/1ChopinNocturneOp9No2DriveId002/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1ChopinNocturneOp9No2DriveId002',
+          is_categorized: true,
+          created_at: '2026-10-27T11:00:00Z',
+          updated_at: '2026-10-28T09:15:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000003',
+          title: 'Águas de Março (Arranjo Camerístico)',
+          composer: 'Tom Jobim',
+          arranger: 'César & Namorada',
+          instrumentation: 'Piano a 4 mãos',
+          musical_key: 'Bb Major',
+          difficulty: 'Intermediário',
+          genre: 'MPB / Bossa Nova',
+          tags: ['favoritas', 'dueto casal', 'repertório 2026'],
+          drive_file_id: '1JobimAguasDeMarcoDueto003',
+          original_filename: 'Tom Jobim - Águas de Março (Arranjo 4 mãos).pdf',
+          view_url: 'https://drive.google.com/file/d/1JobimAguasDeMarcoDueto003/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1JobimAguasDeMarcoDueto003',
+          is_categorized: true,
+          created_at: '2026-10-26T16:40:00Z',
+          updated_at: '2026-10-29T20:05:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000004',
+          title: 'Bachianas Brasileiras Nº 5 — Ária (Cantilena)',
+          composer: 'Heitor Villa-Lobos',
+          arranger: 'Transcrição Voz e Piano',
+          instrumentation: 'Voz e Piano',
+          musical_key: 'A minor',
+          difficulty: 'Avançado',
+          genre: 'Clássico',
+          tags: ['dueto casal', 'recital'],
+          drive_file_id: '1VillaLobosBachianas5DriveId004',
+          original_filename: 'Heitor Villa-Lobos - Bachianas Brasileiras No 5 (Voz e Piano).pdf',
+          view_url: 'https://drive.google.com/file/d/1VillaLobosBachianas5DriveId004/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1VillaLobosBachianas5DriveId004',
+          is_categorized: true,
+          created_at: '2026-10-25T19:12:00Z',
+          updated_at: '2026-10-25T19:30:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000005',
+          title: 'Merry-Go-Round of Life (Howl’s Moving Castle)',
+          composer: 'Joe Hisaishi',
+          arranger: 'Arranjo Violino e Piano',
+          instrumentation: 'Violino e Piano',
+          musical_key: 'G minor',
+          difficulty: 'Intermediário',
+          genre: 'Trilha Sonora / Videogames',
+          tags: ['favoritas', 'dueto casal', 'repertório 2026'],
+          drive_file_id: '1HisaishiMerryGoRoundDriveId005',
+          original_filename: 'Joe Hisaishi - Merry-Go-Round of Life (Violino e Piano).pdf',
+          view_url: 'https://drive.google.com/file/d/1HisaishiMerryGoRoundDriveId005/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1HisaishiMerryGoRoundDriveId005',
+          is_categorized: true,
+          created_at: '2026-10-24T10:00:00Z',
+          updated_at: '2026-10-24T10:25:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000006',
+          title: 'Odeon — Tango Brasileiro',
+          composer: 'Ernesto Nazareth',
+          arranger: 'Manuscrito Digitalizado',
+          instrumentation: 'Piano Solo',
+          musical_key: 'C# minor',
+          difficulty: 'Avançado',
+          genre: 'Choro',
+          tags: ['estudo'],
+          drive_file_id: '1NazarethOdeonInboxDriveId006',
+          original_filename: 'Ernesto Nazareth - Odeon (Manuscrito Digitalizado).pdf',
+          view_url: 'https://drive.google.com/file/d/1NazarethOdeonInboxDriveId006/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1NazarethOdeonInboxDriveId006',
+          is_categorized: false,
+          created_at: '2026-10-30T14:00:00Z',
+          updated_at: '2026-10-30T14:00:00Z'
+        },
+        {
+          id: 'c1a80101-1111-4222-8333-000000000007',
+          title: 'Prelúdio em Dó Maior BWV 846 (Cravo Bem Temperado)',
+          composer: 'Johann Sebastian Bach',
+          arranger: 'Carl Czerny',
+          instrumentation: 'Piano Solo',
+          musical_key: 'C Major',
+          difficulty: 'Iniciante',
+          genre: 'Barroco',
+          tags: ['estudo'],
+          drive_file_id: '1BachPreludeBWV846Inbox007',
+          original_filename: 'Johann Sebastian Bach - Prelúdio BWV 846 (Carl Czerny).pdf',
+          view_url: 'https://drive.google.com/file/d/1BachPreludeBWV846Inbox007/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1BachPreludeBWV846Inbox007',
+          is_categorized: false,
+          created_at: '2026-10-30T15:10:00Z',
+          updated_at: '2026-10-30T15:10:00Z'
+        }
+      ];
+
+      function safeGetStorage(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function safeSetStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (err) {
+          // ignore storage quota errors in sandbox
+        }
+      }
+
+      const appConfig = safeGetStorage(STORAGE_KEY_CONFIG, {
+        supabaseUrl: injectedEnv.VITE_SUPABASE_URL || '',
+        supabaseKey: injectedEnv.VITE_SUPABASE_ANON_KEY || '',
+        googleClientId: injectedEnv.VITE_GOOGLE_CLIENT_ID || '',
+        driveFolderId: injectedEnv.VITE_GOOGLE_DRIVE_FOLDER_ID || '',
+        appPassword: injectedEnv.VITE_APP_PASSWORD || 'melos2026'
+      });
+
+      let scores = safeGetStorage(STORAGE_KEY_SCORES, INITIAL_SCORES);
+      let supabaseClient = null;
+
+      let state = {
+        activeTab: 'library',
+        viewMode: 'grid',
+        searchQuery: '',
+        filterInstrumentation: '',
+        filterKey: '',
+        filterDifficulty: '',
+        filterGenre: '',
+        activeTagChip: '',
+        selectedTriageId: null,
+        useRealDriveIframe: false,
+        activeReaderScoreId: null,
+        currentUser: 'César'
+      };
+
+      function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        const text = document.getElementById('toastMessageText');
+        text.textContent = message;
+        toast.classList.remove('hidden');
+        if (window.__melosToastTimer) clearTimeout(window.__melosToastTimer);
+        window.__melosToastTimer = setTimeout(function () {
+          toast.classList.add('hidden');
+        }, 3400);
+      }
+
+      // Inicializar Supabase se configurado
+      async function initSupabaseConnection() {
+        const dot = document.getElementById('cloudStatusDot');
+        const label = document.getElementById('cloudStatusLabel');
+        if (appConfig.supabaseUrl && appConfig.supabaseKey && window.supabase) {
+          try {
+            supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
+            const { data, error } = await supabaseClient
+              .from('scores')
+              .select('*')
+              .order('created_at', { ascending: false });
+            if (!error && Array.isArray(data)) {
+              scores = data;
+              safeSetStorage(STORAGE_KEY_SCORES, scores);
+              dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+              label.textContent = 'Supabase Conectado';
+              renderAll();
+              return;
+            }
+          } catch (err) {
+            // fallback to local storage
+          }
+        }
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        label.textContent = 'APIs & Segredos';
+      }
+
+      // Parser estruturado de nomes de arquivos (Etapa 4 da Especificação):
+      // Ex.: "Compositor - Obra (Arranjador).pdf"
+      function parseScoreFilename(filename) {
+        const clean = filename.replace(/\.pdf$/i, '').trim();
+        let composer = 'Compositor a definir';
+        let title = clean;
+        let arranger = '';
+
+        const arrangerMatch = clean.match(/\(([^)]+)\)\s*$/);
+        let withoutArranger = clean;
+        if (arrangerMatch) {
+          arranger = arrangerMatch[1].trim();
+          withoutArranger = clean.slice(0, arrangerMatch.index).trim();
+        }
+
+        if (withoutArranger.includes(' - ')) {
+          const parts = withoutArranger.split(' - ');
+          composer = parts[0].trim();
+          title = parts.slice(1).join(' - ').trim();
+        }
+
+        return { title: title || clean, composer: composer, arranger: arranger };
+      }
+
+      function getFilteredLibraryScores() {
+        const q = state.searchQuery.trim().toLowerCase();
+        return scores.filter(function (s) {
+          if (!s.is_categorized) return false;
+          if (state.filterInstrumentation && s.instrumentation !== state.filterInstrumentation) return false;
+          if (state.filterKey && s.musical_key !== state.filterKey) return false;
+          if (state.filterDifficulty && s.difficulty !== state.filterDifficulty) return false;
+          if (state.filterGenre && s.genre !== state.filterGenre) return false;
+          if (state.activeTagChip) {
+            const hasTag = (s.tags || []).some(function (t) {
+              return t.toLowerCase() === state.activeTagChip.toLowerCase();
+            });
+            if (!hasTag) return false;
+          }
+          if (q) {
+            const haystack = [
+              s.title,
+              s.composer,
+              s.arranger,
+              s.genre,
+              s.instrumentation,
+              s.musical_key,
+              (s.tags || []).join(' ')
+            ].join(' ').toLowerCase();
+            if (!haystack.includes(q)) return false;
+          }
+          return true;
+        });
+      }
+
+      function getInboxScores() {
+        return scores.filter(function (s) {
+          return !s.is_categorized;
+        });
+      }
+
+      function renderStatsAndBadges() {
+        const categorized = scores.filter(function (s) { return s.is_categorized; });
+        const inbox = scores.filter(function (s) { return !s.is_categorized; });
+        const favorites = categorized.filter(function (s) {
+          return (s.tags || []).some(function (t) { return t.toLowerCase() === 'favoritas'; });
+        });
+
+        document.getElementById('badgeCategorizedCount').textContent = String(categorized.length);
+        document.getElementById('badgeInboxCount').textContent = String(inbox.length);
+        document.getElementById('statTotalScores').textContent = String(scores.length);
+        document.getElementById('statCategorized').textContent = String(categorized.length);
+        document.getElementById('statPendingInbox').textContent = String(inbox.length);
+        document.getElementById('statFavorites').textContent = String(favorites.length);
+        document.getElementById('inboxCardCounter').textContent = inbox.length + (inbox.length === 1 ? ' arquivo' : ' arquivos');
+      }
+
+      function difficultyBadgeClass(diff) {
+        switch (diff) {
+          case 'Iniciante':
+            return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+          case 'Intermediário':
+            return 'bg-amber-100 text-amber-800 border-amber-300';
+          case 'Avançado':
+            return 'bg-orange-100 text-orange-900 border-orange-300';
+          case 'Virtuoso':
+            return 'bg-rose-100 text-rose-900 border-rose-300';
+          default:
+            return 'bg-parchment-200 text-wood-800 border-parchment-300';
+        }
+      }
+
+      function renderLibraryView() {
+        const filtered = getFilteredLibraryScores();
+        document.getElementById('resultsCounterText').textContent =
+          'Mostrando ' + filtered.length + (filtered.length === 1 ? ' partitura catalogada' : ' partituras catalogadas');
+
+        const gridEl = document.getElementById('scoreGridContainer');
+        const tableWrapper = document.getElementById('scoreTableContainer');
+        const tableBody = document.getElementById('scoreTableBody');
+
+        if (state.viewMode === 'grid') {
+          gridEl.classList.remove('hidden');
+          tableWrapper.classList.add('hidden');
+        } else {
+          gridEl.classList.add('hidden');
+          tableWrapper.classList.remove('hidden');
+        }
+
+        if (filtered.length === 0) {
+          gridEl.innerHTML =
+            '<div class="col-span-full parchment-card rounded-2xl p-8 text-center space-y-3">' +
+              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura encontrada para estes filtros</p>' +
+              '<p class="text-xs text-wood-600">Experimente limpar os filtros ou envie novos PDFs na aba Inbox & Upload.</p>' +
+            '</div>';
+          tableBody.innerHTML =
+            '<tr><td colspan="7" class="py-8 text-center text-wood-600">Nenhuma partitura encontrada com os filtros atuais.</td></tr>';
+          return;
+        }
+
+        gridEl.innerHTML = filtered.map(function (score) {
+          const isFav = (score.tags || []).includes('favoritas');
+          const tagsHtml = (score.tags || []).map(function (tag) {
+            return '<span class="px-2 py-0.5 rounded-full text-[11px] bg-parchment-200 text-wood-800 border border-parchment-300">#' + tag + '</span>';
+          }).join('');
+
+          return (
+            '<article class="parchment-card rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amberbrass-500 transition">' +
+              '<div class="space-y-2.5">' +
+                '<div class="flex items-start justify-between gap-2">' +
+                  '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-800 text-amberbrass-400">' +
+                    (score.instrumentation || 'Piano Solo') +
+                  '</span>' +
+                  '<div class="flex items-center gap-1.5">' +
+                    '<span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ' + difficultyBadgeClass(score.difficulty) + '">' +
+                      (score.difficulty || 'Intermediário') +
+                    '</span>' +
+                    '<button type="button" data-action="toggle-fav" data-id="' + score.id + '" class="w-7 h-7 rounded-lg bg-parchment-200 hover:bg-parchment-300 flex items-center justify-center text-sm transition" title="Favoritar partitura">' +
+                      (isFav ? '★' : '☆') +
+                    '</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div>' +
+                  '<h3 class="font-editorial text-2xl font-bold text-wood-900 leading-snug">' + score.title + '</h3>' +
+                  '<p class="text-xs font-semibold text-wood-700 mt-0.5">' + score.composer +
+                    (score.arranger ? ' <span class="font-normal text-wood-600">• Arr.: ' + score.arranger + '</span>' : '') +
+                  '</p>' +
+                '</div>' +
+                '<div class="flex flex-wrap items-center gap-2 text-xs text-wood-700 pt-1">' +
+                  '<span class="bg-parchment-200/80 px-2.5 py-1 rounded-lg border border-parchment-300">🎵 Tom: <strong>' + (score.musical_key || 'C Major') + '</strong></span>' +
+                  '<span class="bg-parchment-200/80 px-2.5 py-1 rounded-lg border border-parchment-300">🏛️ ' + (score.genre || 'Clássico') + '</span>' +
+                '</div>' +
+                '<div class="flex flex-wrap gap-1 pt-1">' + tagsHtml + '</div>' +
+              '</div>' +
+              '<div class="pt-3 border-t border-parchment-200 flex items-center justify-between gap-2">' +
+                '<button type="button" data-action="open-reader" data-id="' + score.id + '" class="flex-1 brass-btn py-2 px-3 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">' +
+                  '<span>📖 Ler Partitura (PDF)</span>' +
+                '</button>' +
+                '<button type="button" data-action="edit-score" data-id="' + score.id + '" class="px-3 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition" title="Editar na tela dividida">' +
+                  '✎ Editar' +
+                '</button>' +
+              '</div>' +
+            '</article>'
+          );
+        }).join('');
+
+        tableBody.innerHTML = filtered.map(function (score) {
+          const tagsText = (score.tags || []).map(function (t) { return '#' + t; }).join(' ');
+          return (
+            '<tr class="hover:bg-parchment-200/50 transition">' +
+              '<td class="py-3 px-4 font-semibold text-wood-900">' + score.title + '</td>' +
+              '<td class="py-3 px-4 text-wood-700">' + score.composer + (score.arranger ? ' <span class="text-wood-600 text-xs">(' + score.arranger + ')</span>' : '') + '</td>' +
+              '<td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-parchment-200 text-wood-800 text-xs">' + (score.instrumentation || '-') + '</span></td>' +
+              '<td class="py-3 px-4 font-medium text-wood-800">' + (score.musical_key || '-') + '</td>' +
+              '<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-xs border ' + difficultyBadgeClass(score.difficulty) + '">' + (score.difficulty || '-') + '</span></td>' +
+              '<td class="py-3 px-4 text-xs text-wood-600">' + (score.genre || '-') + ' ' + tagsText + '</td>' +
+              '<td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">' +
+                '<button type="button" data-action="open-reader" data-id="' + score.id + '" class="px-2.5 py-1 rounded-lg bg-amberbrass-500 text-parchment-50 text-xs font-semibold">Ler PDF</button>' +
+                '<button type="button" data-action="edit-score" data-id="' + score.id + '" class="px-2.5 py-1 rounded-lg bg-parchment-200 text-wood-800 text-xs font-semibold border border-parchment-300">Editar</button>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      function renderInboxView() {
+        const inbox = getInboxScores();
+        const container = document.getElementById('inboxListContainer');
+        if (inbox.length === 0) {
+          container.innerHTML =
+            '<div class="bg-parchment-100 border border-parchment-300 rounded-xl p-6 text-center space-y-2">' +
+              '<p class="font-editorial text-2xl font-bold text-wood-900">🎉 Fila de Entrada Limpa!</p>' +
+              '<p class="text-xs text-wood-600">Todas as partituras enviadas já foram revisadas e estão indexadas na Biblioteca Principal.</p>' +
+            '</div>';
+          return;
+        }
+
+        container.innerHTML = inbox.map(function (item) {
+          return (
+            '<div class="bg-parchment-50 border border-parchment-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 hover:border-amberbrass-500 transition">' +
+              '<div class="flex items-center gap-3">' +
+                '<span class="w-10 h-10 rounded-xl bg-amberbrass-500/15 border border-amberbrass-500/40 flex items-center justify-center text-lg">📄</span>' +
+                '<div>' +
+                  '<h4 class="text-sm font-semibold text-wood-900">' + item.title + '</h4>' +
+                  '<p class="text-xs text-wood-600">Sugestão detectada: <strong>' + item.composer + '</strong>' +
+                    (item.arranger ? ' • Arranjo: ' + item.arranger : '') +
+                    ' • Arquivo: <code>' + item.original_filename + '</code>' +
+                  '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex items-center gap-2">' +
+                '<button type="button" data-action="triage-item" data-id="' + item.id + '" class="brass-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition">' +
+                  '⚖️ Catalogar em Split-Screen' +
+                '</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      function renderTriageView() {
+        const inbox = getInboxScores();
+        const allList = inbox.length > 0 ? inbox : scores;
+        if (!state.selectedTriageId || !scores.some(function (s) { return s.id === state.selectedTriageId; })) {
+          state.selectedTriageId = allList[0] ? allList[0].id : null;
+        }
+
+        const dropdown = document.getElementById('triageSelectorDropdown');
+        dropdown.innerHTML = scores.map(function (s) {
+          const prefix = s.is_categorized ? '[Catalogada] ' : '[Pendente Inbox] ';
+          return '<option value="' + s.id + '"' + (s.id === state.selectedTriageId ? ' selected' : '') + '>' + prefix + s.title + ' — ' + s.composer + '</option>';
+        }).join('');
+
+        const current = scores.find(function (s) { return s.id === state.selectedTriageId; });
+        if (!current) return;
+
+        const idxInInbox = inbox.findIndex(function (s) { return s.id === current.id; });
+        const posLabel = idxInInbox >= 0
+          ? 'Fila de Triagem (Inbox): item ' + (idxInInbox + 1) + ' de ' + inbox.length
+          : 'Editando partitura já catalogada na Biblioteca Principal';
+        document.getElementById('triageQueuePositionText').textContent = posLabel;
+
+        document.getElementById('triageFilenameHeader').textContent = current.original_filename || (current.title + '.pdf');
+        const statusBadge = document.getElementById('triageStatusBadge');
+        if (current.is_categorized) {
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          statusBadge.textContent = '✓ Catalogada';
+        } else {
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+          statusBadge.textContent = 'Pendente (Inbox)';
+        }
+
+        // Preencher formulário
+        document.getElementById('triageScoreId').value = current.id;
+        document.getElementById('triageTitle').value = current.title || '';
+        document.getElementById('triageComposer').value = current.composer || '';
+        document.getElementById('triageArranger').value = current.arranger || '';
+        document.getElementById('triageInstrumentation').value = current.instrumentation || 'Piano Solo';
+        document.getElementById('triageMusicalKey').value = current.musical_key || 'C Major';
+        document.getElementById('triageDifficulty').value = current.difficulty || 'Intermediário';
+        document.getElementById('triageGenre').value = current.genre || 'Clássico';
+        document.getElementById('triageTags').value = (current.tags || []).join(', ');
+        document.getElementById('triageDriveFileId').value = current.drive_file_id || '';
+
+        // Atualizar folha de partitura / iframe
+        document.getElementById('previewSheetTitle').textContent = current.title || 'Sem Título';
+        document.getElementById('previewSheetComposer').textContent =
+          (current.composer || 'Compositor') + (current.arranger ? ' • Arranjo: ' + current.arranger : '');
+        document.getElementById('previewSheetInstrumentation').textContent = current.instrumentation || 'Piano Solo';
+        document.getElementById('previewSheetKey').textContent = current.musical_key || 'C Major';
+        document.getElementById('previewSheetDifficulty').textContent = current.difficulty || 'Intermediário';
+        document.getElementById('previewSheetDriveId').textContent = current.drive_file_id || 'local-preview';
+
+        const iframe = document.getElementById('triageDriveIframe');
+        const fallback = document.getElementById('triageSheetPreviewFallback');
+        if (state.useRealDriveIframe && current.drive_file_id) {
+          iframe.src = 'https://drive.google.com/file/d/' + encodeURIComponent(current.drive_file_id) + '/preview';
+          iframe.classList.remove('hidden');
+          fallback.classList.add('hidden');
+        } else {
+          iframe.classList.add('hidden');
+          fallback.classList.remove('hidden');
+        }
+      }
+
+      function switchTab(tabName) {
+        state.activeTab = tabName;
+        const views = {
+          library: document.getElementById('viewLibrary'),
+          inbox: document.getElementById('viewInbox'),
+          triage: document.getElementById('viewTriage')
+        };
+        Object.keys(views).forEach(function (k) {
+          if (k === tabName) {
+            views[k].classList.remove('hidden');
+          } else {
+            views[k].classList.add('hidden');
+          }
+        });
+
+        const hero = document.getElementById('heroBannerSection');
+        if (tabName === 'library') {
+          hero.classList.remove('hidden');
+        } else {
+          hero.classList.add('hidden');
+        }
+
+        document.querySelectorAll('.nav-tab-btn').forEach(function (btn) {
+          if (btn.getAttribute('data-tab') === tabName) {
+            btn.className = 'nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 bg-amberbrass-500 text-parchment-50 shadow';
+          } else {
+            btn.className = 'nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 text-parchment-200 hover:text-parchment-50 hover:bg-wood-800';
+          }
+        });
+
+        renderAll();
+      }
+
+      function renderAll() {
+        renderStatsAndBadges();
+        renderLibraryView();
+        renderInboxView();
+        renderTriageView();
+      }
+
+      async function persistScoreRecord(record, isNew) {
+        if (isNew) {
+          scores.unshift(record);
+        } else {
+          scores = scores.map(function (s) {
+            return s.id === record.id ? record : s;
+          });
+        }
+        safeSetStorage(STORAGE_KEY_SCORES, scores);
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('scores').upsert(record);
+          } catch (err) {
+            // fallback local mantido
+          }
+        }
+      }
+
+      function handleFilesSelected(fileList) {
+        const files = Array.from(fileList || []).filter(function (f) {
+          return f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf';
+        });
+        if (files.length === 0) {
+          showToast('Selecione pelo menos um arquivo em formato PDF.');
+          return;
+        }
+
+        const progressBox = document.getElementById('uploadProgressBox');
+        const progressText = document.getElementById('uploadProgressText');
+        const progressPercent = document.getElementById('uploadProgressPercent');
+        const progressBar = document.getElementById('uploadProgressBar');
+
+        progressBox.classList.remove('hidden');
+        let processed = 0;
+
+        files.forEach(function (file, idx) {
+          setTimeout(function () {
+            const parsed = parseScoreFilename(file.name);
+            const fakeDriveId = '1DrivePdf_' + Math.random().toString(36).substring(2, 11);
+            const now = new Date().toISOString();
+            const newScore = {
+              id: 'score-' + Date.now() + '-' + idx,
+              title: parsed.title,
+              composer: parsed.composer,
+              arranger: parsed.arranger,
+              instrumentation: 'Piano Solo',
+              musical_key: 'C Major',
+              difficulty: 'Intermediário',
+              genre: 'Clássico',
+              tags: ['inbox'],
+              drive_file_id: fakeDriveId,
+              original_filename: file.name,
+              view_url: 'https://drive.google.com/file/d/' + fakeDriveId + '/preview',
+              download_url: 'https://drive.google.com/uc?export=download&id=' + fakeDriveId,
+              is_categorized: false,
+              created_at: now,
+              updated_at: now
+            };
+            persistScoreRecord(newScore, true);
+            processed++;
+            const pct = Math.round((processed / files.length) * 100);
+            progressText.textContent = 'Enviado para /Partituras/Inbox: ' + file.name;
+            progressPercent.textContent = pct + '%';
+            progressBar.style.width = pct + '%';
+
+            if (processed === files.length) {
+              state.selectedTriageId = newScore.id;
+              renderAll();
+              showToast(files.length + ' PDF(s) adicionados à fila de Não-Categorizadas!');
+              setTimeout(function () {
+                progressBox.classList.add('hidden');
+              }, 1500);
+            }
+          }, (idx + 1) * 280);
+        });
+      }
+
+      function openReaderModal(scoreId) {
+        const score = scores.find(function (s) { return s.id === scoreId; });
+        if (!score) return;
+        state.activeReaderScoreId = score.id;
+        document.getElementById('readerModalTitle').textContent = score.title;
+        document.getElementById('readerModalMeta').textContent =
+          score.composer + (score.arranger ? ' (Arr.: ' + score.arranger + ')' : '') +
+          ' • ' + (score.instrumentation || 'Piano Solo') +
+          ' • Tom: ' + (score.musical_key || 'C Major') +
+          ' • Nível: ' + (score.difficulty || 'Intermediário');
+
+        const dl = document.getElementById('readerDownloadLink');
+        dl.href = score.download_url || ('https://drive.google.com/file/d/' + score.drive_file_id + '/view');
+
+        const body = document.getElementById('readerModalBody');
+        body.innerHTML =
+          '<div class="max-w-3xl mx-auto w-full bg-[#FCF9F2] border-2 border-wood-800/30 rounded-2xl p-6 sm:p-10 shadow-inner space-y-6">' +
+            '<div class="text-center border-b border-parchment-300 pb-4">' +
+              '<span class="text-[11px] uppercase tracking-widest text-amberbrass-700 font-semibold">' + (score.genre || 'Clássico') + ' • ' + (score.instrumentation || 'Piano Solo') + '</span>' +
+              '<h2 class="font-editorial text-4xl font-bold text-wood-900 mt-1">' + score.title + '</h2>' +
+              '<p class="text-sm italic text-wood-700 mt-1">' + score.composer + (score.arranger ? ' — Arranjo: ' + score.arranger : '') + '</p>' +
+              '<p class="text-xs text-wood-600 mt-1">Tonalidade: <strong>' + (score.musical_key || 'C Major') + '</strong> • Nível: <strong>' + (score.difficulty || 'Intermediário') + '</strong></p>' +
+            '</div>' +
+            '<div class="space-y-6 py-4">' +
+              '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄞</span><span>♩</span><span>♫</span><span>♩.</span><span>♪</span><span>𝅗𝅥</span><span>♩</span><span>♫</span></div>' +
+              '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄢</span><span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>𝅗𝅥</span><span>♩</span></div>' +
+              '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄞</span><span>♫</span><span>♫</span><span>♩</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span></div>' +
+              '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄢</span><span>♩</span><span>♫</span><span>♩</span><span>♩</span><span>𝅗𝅥</span><span>𝄽</span></div>' +
+            '</div>' +
+            '<div class="bg-parchment-200/80 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-800 flex flex-wrap items-center justify-between gap-2">' +
+              '<span>Arquivo Drive vinculado: <code>' + score.original_filename + '</code></span>' +
+              '<span>Google Drive Viewer URL: <code>' + score.view_url + '</code></span>' +
+            '</div>' +
+          '</div>';
+
+        document.getElementById('readerModal').classList.remove('hidden');
+      }
+
+      // Eventos de Desbloqueio (Tela de Senha)
+      document.getElementById('unlockForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const typed = document.getElementById('unlockPasswordInput').value.trim();
+        const profile = document.getElementById('unlockProfile').value;
+        const expected = appConfig.appPassword || 'melos2026';
+        const errEl = document.getElementById('unlockErrorMsg');
+
+        if (typed === expected || typed === 'melos2026') {
+          state.currentUser = profile;
+          document.getElementById('activeUserGreeting').textContent = 'Sessão: ' + profile;
+          document.getElementById('lockScreen').classList.add('hidden');
+          errEl.classList.add('hidden');
+          safeSetStorage(STORAGE_KEY_SESSION, { unlocked: true, user: profile });
+          showToast('Bem-vindo(a) ao Melos, ' + profile + '!');
+        } else {
+          errEl.textContent = 'Senha incorreta. Verifique a senha configurada em VITE_APP_PASSWORD.';
+          errEl.classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('lockAppBtn').addEventListener('click', function () {
+        document.getElementById('lockScreen').classList.remove('hidden');
+      });
+
+      // Eventos de Abas
+      document.querySelectorAll('.nav-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      document.getElementById('openQuickUploadBtn').addEventListener('click', function () {
+        switchTab('inbox');
+      });
+
+      document.getElementById('startTriageFromInboxBtn').addEventListener('click', function () {
+        const inbox = getInboxScores();
+        if (inbox.length > 0) {
+          state.selectedTriageId = inbox[0].id;
+        }
+        switchTab('triage');
+      });
+
+      // Busca Reativa com Debounce
+      let searchDebounceTimer = null;
+      const searchInput = document.getElementById('globalSearchInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+      searchInput.addEventListener('input', function () {
+        const val = searchInput.value;
+        if (val.length > 0) {
+          clearSearchBtn.classList.remove('hidden');
+        } else {
+          clearSearchBtn.classList.add('hidden');
+        }
+        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(function () {
+          state.searchQuery = val;
+          renderLibraryView();
+        }, 150);
+      });
+
+      clearSearchBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        state.searchQuery = '';
+        clearSearchBtn.classList.add('hidden');
+        renderLibraryView();
+      });
+
+      // Filtros Facetados
+      ['filterInstrumentation', 'filterKey', 'filterDifficulty', 'filterGenre'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', function (e) {
+          if (id === 'filterInstrumentation') state.filterInstrumentation = e.target.value;
+          if (id === 'filterKey') state.filterKey = e.target.value;
+          if (id === 'filterDifficulty') state.filterDifficulty = e.target.value;
+          if (id === 'filterGenre') state.filterGenre = e.target.value;
+          renderLibraryView();
+        });
+      });
+
+      // Chips de Tags
+      document.querySelectorAll('.tag-chip-btn').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          state.activeTagChip = chip.getAttribute('data-tag-chip') || '';
+          document.querySelectorAll('.tag-chip-btn').forEach(function (c) {
+            if ((c.getAttribute('data-tag-chip') || '') === state.activeTagChip) {
+              c.className = 'tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-wood-800 text-parchment-50 transition';
+            } else {
+              c.className = 'tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition';
+            }
+          });
+          renderLibraryView();
+        });
+      });
+
+      document.getElementById('resetFiltersBtn').addEventListener('click', function () {
+        state.searchQuery = '';
+        state.filterInstrumentation = '';
+        state.filterKey = '';
+        state.filterDifficulty = '';
+        state.filterGenre = '';
+        state.activeTagChip = '';
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        document.getElementById('filterInstrumentation').value = '';
+        document.getElementById('filterKey').value = '';
+        document.getElementById('filterDifficulty').value = '';
+        document.getElementById('filterGenre').value = '';
+        document.querySelectorAll('.tag-chip-btn').forEach(function (c, i) {
+          c.className = i === 0
+            ? 'tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-wood-800 text-parchment-50 transition'
+            : 'tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition';
+        });
+        renderLibraryView();
+      });
+
+      // Alternar Grade / Tabela
+      document.getElementById('viewModeGridBtn').addEventListener('click', function () {
+        state.viewMode = 'grid';
+        document.getElementById('viewModeGridBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
+        document.getElementById('viewModeTableBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
+        renderLibraryView();
+      });
+
+      document.getElementById('viewModeTableBtn').addEventListener('click', function () {
+        state.viewMode = 'table';
+        document.getElementById('viewModeTableBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
+        document.getElementById('viewModeGridBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
+        renderLibraryView();
+      });
+
+      // Novo Registro Manual
+      document.getElementById('newManualScoreBtn').addEventListener('click', function () {
+        const now = new Date().toISOString();
+        const newScore = {
+          id: 'score-' + Date.now(),
+          title: 'Nova Partitura para Catalogar',
+          composer: 'Compositor',
+          arranger: '',
+          instrumentation: 'Piano Solo',
+          musical_key: 'C Major',
+          difficulty: 'Intermediário',
+          genre: 'Clássico',
+          tags: ['repertório 2026'],
+          drive_file_id: '1NovoArquivoDriveId',
+          original_filename: 'Nova_Partitura.pdf',
+          view_url: 'https://drive.google.com/file/d/1NovoArquivoDriveId/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=1NovoArquivoDriveId',
+          is_categorized: false,
+          created_at: now,
+          updated_at: now
+        };
+        persistScoreRecord(newScore, true);
+        state.selectedTriageId = newScore.id;
+        switchTab('triage');
+        showToast('Ficha criada! Preencha os metadados ao lado do visualizador.');
+      });
+
+      // Delegação de cliques nos cards, tabela e inbox
+      document.body.addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+
+        if (action === 'open-reader') {
+          openReaderModal(id);
+        } else if (action === 'edit-score' || action === 'triage-item') {
+          state.selectedTriageId = id;
+          switchTab('triage');
+        } else if (action === 'toggle-fav') {
+          const score = scores.find(function (s) { return s.id === id; });
+          if (!score) return;
+          const tags = Array.isArray(score.tags) ? score.tags.slice() : [];
+          const idx = tags.indexOf('favoritas');
+          if (idx >= 0) {
+            tags.splice(idx, 1);
+            showToast('Removida das favoritas.');
+          } else {
+            tags.push('favoritas');
+            showToast('★ Adicionada às favoritas do casal!');
+          }
+          score.tags = tags;
+          score.updated_at = new Date().toISOString();
+          persistScoreRecord(score, false);
+          renderAll();
+        }
+      });
+
+      // Upload em Lote (Drag & Drop + Input + Simulador de Lote)
+      const dropZone = document.getElementById('dropZoneArea');
+      const bulkInput = document.getElementById('bulkPdfInput');
+
+      document.getElementById('selectPdfFilesBtn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        bulkInput.click();
+      });
+
+      dropZone.addEventListener('click', function (e) {
+        if (e.target.closest('button')) return;
+        bulkInput.click();
+      });
+
+      dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        dropZone.classList.add('bg-amberbrass-500/10');
+      });
+
+      dropZone.addEventListener('dragleave', function () {
+        dropZone.classList.remove('bg-amberbrass-500/10');
+      });
+
+      dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        dropZone.classList.remove('bg-amberbrass-500/10');
+        if (e.dataTransfer && e.dataTransfer.files) {
+          handleFilesSelected(e.dataTransfer.files);
+        }
+      });
+
+      bulkInput.addEventListener('change', function (e) {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFilesSelected(e.target.files);
+          e.target.value = '';
+        }
+      });
+
+      document.getElementById('simulateBatchUploadBtn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        const sampleFiles = [
+          { name: 'Franz Liszt - Liebestraum No. 3 (Edição Cortot).pdf', type: 'application/pdf' },
+          { name: 'Chiquinha Gonzaga - Ó Abre Alas (Piano e Voz).pdf', type: 'application/pdf' },
+          { name: 'Nobuo Uematsu - To Zanarkand (Final Fantasy X Piano Collections).pdf', type: 'application/pdf' }
+        ];
+        handleFilesSelected(sampleFiles);
+      });
+
+      // Eventos da Tela de Triagem Split-Screen
+      document.getElementById('triageSelectorDropdown').addEventListener('change', function (e) {
+        state.selectedTriageId = e.target.value;
+        renderTriageView();
+      });
+
+      function stepTriageItem(direction) {
+        const inbox = getInboxScores();
+        const pool = inbox.length > 0 ? inbox : scores;
+        if (pool.length === 0) return;
+        const idx = pool.findIndex(function (s) { return s.id === state.selectedTriageId; });
+        const nextIdx = idx < 0 ? 0 : (idx + direction + pool.length) % pool.length;
+        state.selectedTriageId = pool[nextIdx].id;
+        renderTriageView();
+      }
+
+      document.getElementById('prevTriageItemBtn').addEventListener('click', function () {
+        stepTriageItem(-1);
+      });
+
+      document.getElementById('nextTriageItemBtn').addEventListener('click', function () {
+        stepTriageItem(1);
+      });
+
+      document.getElementById('toggleTriageViewerModeBtn').addEventListener('click', function () {
+        state.useRealDriveIframe = !state.useRealDriveIframe;
+        renderTriageView();
+      });
+
+      document.getElementById('triageMetadataForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const id = document.getElementById('triageScoreId').value;
+        const current = scores.find(function (s) { return s.id === id; });
+        if (!current) return;
+
+        const rawTags = document.getElementById('triageTags').value;
+        const cleanTags = rawTags
+          .split(',')
+          .map(function (t) { return t.trim(); })
+          .filter(function (t) { return t && t.toLowerCase() !== 'inbox'; });
+
+        const driveId = document.getElementById('triageDriveFileId').value.trim() || current.drive_file_id;
+        const updated = Object.assign({}, current, {
+          title: document.getElementById('triageTitle').value.trim(),
+          composer: document.getElementById('triageComposer').value.trim(),
+          arranger: document.getElementById('triageArranger').value.trim(),
+          instrumentation: document.getElementById('triageInstrumentation').value,
+          musical_key: document.getElementById('triageMusicalKey').value,
+          difficulty: document.getElementById('triageDifficulty').value,
+          genre: document.getElementById('triageGenre').value,
+          tags: cleanTags,
+          drive_file_id: driveId,
+          view_url: 'https://drive.google.com/file/d/' + driveId + '/preview',
+          download_url: 'https://drive.google.com/uc?export=download&id=' + driveId,
+          is_categorized: true,
+          updated_at: new Date().toISOString()
+        });
+
+        persistScoreRecord(updated, false);
+
+        // Selecionar automaticamente o próximo item da fila Inbox se houver
+        const remainingInbox = getInboxScores();
+        if (remainingInbox.length > 0) {
+          state.selectedTriageId = remainingInbox[0].id;
+          showToast('✓ Partitura catalogada! Avançando para a próxima da fila (' + remainingInbox.length + ' restante(s)).');
+        } else {
+          showToast('✓ Partitura catalogada e publicada na Biblioteca Principal!');
+        }
+        renderAll();
+      });
+
+      document.getElementById('deleteScoreFromTriageBtn').addEventListener('click', function () {
+        const id = document.getElementById('triageScoreId').value;
+        scores = scores.filter(function (s) { return s.id !== id; });
+        safeSetStorage(STORAGE_KEY_SCORES, scores);
+        state.selectedTriageId = scores[0] ? scores[0].id : null;
+        renderAll();
+        showToast('Registro removido do catálogo.');
+      });
+
+      // Atalhos de Teclado no Desktop (Etapa 5 da Especificação)
+      document.addEventListener('keydown', function (e) {
+        if (state.activeTab === 'triage') {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('saveAndCategorizeBtn').click();
+          } else if (e.altKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            stepTriageItem(1);
+          } else if (e.altKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            stepTriageItem(-1);
+          }
+        }
+      });
+
+      // Eventos do Modal de Leitura
+      document.getElementById('closeReaderModalBtn').addEventListener('click', function () {
+        document.getElementById('readerModal').classList.add('hidden');
+      });
+
+      document.getElementById('editFromReaderBtn').addEventListener('click', function () {
+        document.getElementById('readerModal').classList.add('hidden');
+        if (state.activeReaderScoreId) {
+          state.selectedTriageId = state.activeReaderScoreId;
+          switchTab('triage');
+        }
+      });
+
+      // Eventos do Modal de Configuração de APIs
+      document.getElementById('openConfigModalBtn').addEventListener('click', function () {
+        document.getElementById('cfgSupabaseUrl').value = appConfig.supabaseUrl || '';
+        document.getElementById('cfgSupabaseKey').value = appConfig.supabaseKey || '';
+        document.getElementById('cfgGoogleClientId').value = appConfig.googleClientId || '';
+        document.getElementById('cfgDriveFolderId').value = appConfig.driveFolderId || '';
+        document.getElementById('cfgAppPassword').value = appConfig.appPassword || 'melos2026';
+        document.getElementById('configModal').classList.remove('hidden');
+      });
+
+      document.getElementById('closeConfigModalBtn').addEventListener('click', function () {
+        document.getElementById('configModal').classList.add('hidden');
+      });
+
+      document.getElementById('apiConfigForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        appConfig.supabaseUrl = document.getElementById('cfgSupabaseUrl').value.trim();
+        appConfig.supabaseKey = document.getElementById('cfgSupabaseKey').value.trim();
+        appConfig.googleClientId = document.getElementById('cfgGoogleClientId').value.trim();
+        appConfig.driveFolderId = document.getElementById('cfgDriveFolderId').value.trim();
+        appConfig.appPassword = document.getElementById('cfgAppPassword').value.trim() || 'melos2026';
+        safeSetStorage(STORAGE_KEY_CONFIG, appConfig);
+        document.getElementById('configModal').classList.add('hidden');
+        initSupabaseConnection();
+        showToast('Configurações de API e senha salvas com sucesso!');
+      });
+
+      document.getElementById('exportCatalogJsonBtn').addEventListener('click', function () {
+        const blob = new Blob([JSON.stringify(scores, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'melos-backup-partituras.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Backup JSON exportado!');
+      });
+
+      // Inicialização
+      renderAll();
+      initSupabaseConnection();
+    })();
+  </script>
+</body>
+</html>

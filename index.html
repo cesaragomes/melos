@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Melos — Biblioteca Privada e Gerenciador de Partituras</title>
+  <title>Melos — Acervo de Partituras</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,45 +97,30 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-amberbrass-400 selection:text-wood-900">
 
-  <!-- TELA DE BLOQUEIO PRIVADO (SENHA DO CASAL / GITHUB SECRETS) -->
+  <!-- TELA DE ENTRADA SIMPLIFICADA (APENAS SENHA) -->
   <div id="lockScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-wood-900/95 backdrop-blur-md">
-    <div class="parchment-card max-w-md w-full rounded-2xl overflow-hidden border-2 border-amberbrass-500/50 shadow-2xl">
-      <div class="relative h-36 overflow-hidden">
-        <img src="./public/assets/hero.jpg" alt="Melos Conservatório" class="w-full h-full object-cover" />
+    <div class="parchment-card max-w-sm w-full rounded-2xl overflow-hidden border-2 border-amberbrass-500/50 shadow-2xl">
+      <div class="relative h-32 overflow-hidden">
+        <img src="./public/assets/hero.jpg" alt="Melos" class="w-full h-full object-cover" />
         <div class="absolute inset-0 bg-gradient-to-t from-wood-900 via-wood-900/60 to-transparent"></div>
-        <div class="absolute bottom-3 left-5 right-5 flex items-center gap-3.5">
-          <img src="./public/assets/logo.jpg" alt="Emblema Melos" class="w-14 h-14 rounded-full border-2 border-amberbrass-400 shadow-lg object-cover bg-parchment-100" />
+        <div class="absolute bottom-3 left-5 right-5 flex items-center gap-3">
+          <img src="./public/assets/logo.jpg" alt="Logo Melos" class="w-12 h-12 rounded-full border-2 border-amberbrass-400 shadow-lg object-cover bg-parchment-100" />
           <div>
-            <span class="text-[11px] uppercase tracking-widest text-amberbrass-400 font-semibold block">Acervo Musical Privado</span>
             <h1 class="font-editorial text-3xl font-bold text-parchment-50 tracking-wide">Melos</h1>
+            <p class="text-xs text-parchment-200/90">Acervo de Partituras</p>
           </div>
         </div>
       </div>
 
-      <div class="p-6 space-y-4">
-        <div class="bg-parchment-200/70 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-700 leading-relaxed">
-          <p class="font-semibold text-wood-900 mb-1 flex items-center gap-1.5">
-            <span>🔒</span> Biblioteca Exclusiva (Acesso Restrito)
-          </p>
-          <p>Este acervo é de uso estritamente privado para estudo e prática musical. Digite a senha configurada no <strong>GitHub Actions Secrets</strong> (<code class="bg-parchment-100 px-1 py-0.5 rounded text-wood-800">VITE_APP_PASSWORD</code>).</p>
-          <p id="demoPasswordHint" class="mt-1.5 text-amberbrass-700 font-medium">💡 Modo Preview: use a senha <code class="bg-parchment-50 px-1.5 py-0.5 rounded border border-amberbrass-400/50 font-bold">melos2026</code> ou clique em Entrar.</p>
-        </div>
-
-        <form id="unlockForm" class="space-y-3">
+      <div class="p-6">
+        <form id="unlockForm" class="space-y-4">
           <div>
-            <label for="unlockProfile" class="block text-xs font-semibold uppercase tracking-wider text-wood-700 mb-1">Quem está acessando?</label>
-            <select id="unlockProfile" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3.5 py-2.5 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
-              <option value="César">🎹 César (Administrador)</option>
-              <option value="Namorada">🎻 Minha Namorada (Co-curadora)</option>
-            </select>
-          </div>
-          <div>
-            <label for="unlockPasswordInput" class="block text-xs font-semibold uppercase tracking-wider text-wood-700 mb-1">Senha de Acesso ao Acervo</label>
-            <input id="unlockPasswordInput" type="password" value="melos2026" placeholder="Digite a senha privada..." class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3.5 py-2.5 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+            <label for="unlockPasswordInput" class="block text-xs font-semibold uppercase tracking-wider text-wood-700 mb-1.5">Senha de acesso</label>
+            <input id="unlockPasswordInput" type="password" placeholder="Digite a senha..." autofocus class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3.5 py-2.5 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
           </div>
           <p id="unlockErrorMsg" class="hidden text-xs font-medium text-red-700 bg-red-100/80 border border-red-300 rounded-lg px-3 py-2"></p>
           <button type="submit" id="unlockSubmitBtn" class="w-full brass-btn font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
-            <span>Desbloquear Biblioteca Melos</span>
+            <span>Entrar</span>
             <span>→</span>
           </button>
         </form>
@@ -143,118 +128,114 @@
     </div>
   </div>
 
-  <!-- CABEÇALHO PRINCIPAL EM MADEIRA DE LUTHIERIA E LATÃO DOURADO -->
+  <!-- CABEÇALHO PRINCIPAL -->
   <header class="wood-header text-parchment-50 sticky top-0 z-30 shadow-lg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <img src="./public/assets/logo.jpg" alt="Logo Melos" class="w-11 h-11 rounded-full border-2 border-amberbrass-400 shadow-md object-cover bg-parchment-100" />
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="font-editorial text-2xl sm:text-3xl font-bold tracking-wide text-parchment-50">Melos</span>
-            <span class="text-[11px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-amberbrass-500/25 border border-amberbrass-400/50 text-amberbrass-400 font-medium">Acervo Privado</span>
-          </div>
-          <p class="text-xs text-parchment-200/80 hidden sm:block">Gerenciador de Partituras em Nuvem • Google Drive &amp; Supabase</p>
-        </div>
+        <img src="./public/assets/logo.jpg" alt="Logo Melos" class="w-10 h-10 rounded-full border-2 border-amberbrass-400 shadow-md object-cover bg-parchment-100" />
+        <span class="font-editorial text-2xl sm:text-3xl font-bold tracking-wide text-parchment-50">Melos</span>
       </div>
 
       <!-- Navegação de Abas -->
       <nav class="flex items-center gap-1.5 bg-wood-900/70 p-1 rounded-xl border border-wood-600">
         <button type="button" id="navTabLibrary" data-tab="library" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 bg-amberbrass-500 text-parchment-50 shadow">
           <span>🎼</span>
-          <span>Biblioteca Principal</span>
+          <span>Biblioteca</span>
           <span id="badgeCategorizedCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-wood-900/40 font-semibold">0</span>
         </button>
         <button type="button" id="navTabInbox" data-tab="inbox" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 text-parchment-200 hover:text-parchment-50 hover:bg-wood-800">
           <span>📥</span>
-          <span>Inbox &amp; Upload</span>
+          <span>Enviar PDFs</span>
           <span id="badgeInboxCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-amberbrass-500/30 text-amberbrass-400 font-semibold">0</span>
         </button>
         <button type="button" id="navTabTriage" data-tab="triage" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 text-parchment-200 hover:text-parchment-50 hover:bg-wood-800">
           <span>⚖️</span>
-          <span>Triagem Split-Screen</span>
+          <span>Triagem</span>
+          <span id="badgeTriageCount" class="hidden px-1.5 py-0.5 text-[11px] rounded-full bg-amberbrass-500/30 text-amberbrass-400 font-semibold">0</span>
         </button>
       </nav>
 
-      <!-- Ações e Status da Nuvem -->
-      <div class="flex items-center gap-2">
-        <button type="button" id="connectGoogleDriveBtn" class="px-3 py-2 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-100 border border-wood-600 transition flex items-center gap-1.5" title="Autorizar upload e leitura no Google Drive via OAuth 2.0">
-          <span id="driveStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span id="driveStatusLabel">Conectar Drive</span>
+      <!-- Indicador Discreto de Sincronização e Bloqueio -->
+      <div class="relative flex items-center gap-2">
+        <button type="button" id="syncStatusBtn" class="px-3 py-2 rounded-xl text-xs font-medium bg-wood-800/90 hover:bg-wood-700 text-parchment-100 border border-wood-600 transition flex items-center gap-2" title="Status da sincronização">
+          <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="syncStatusLabel">Sincronizando...</span>
         </button>
-        <button type="button" id="openQuickUploadBtn" class="brass-btn px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
-          <span>＋</span>
-          <span class="hidden md:inline">Enviar PDFs</span>
-        </button>
-        <button type="button" id="openConfigModalBtn" class="px-3 py-2 rounded-xl text-xs font-medium bg-wood-800 hover:bg-wood-700 text-parchment-100 border border-wood-600 transition flex items-center gap-1.5" title="Configurações de API (Supabase, Google Drive e GitHub Secrets)">
-          <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span id="cloudStatusLabel">APIs &amp; Segredos</span>
-        </button>
-        <button type="button" id="lockAppBtn" class="px-2.5 py-2 rounded-xl text-xs bg-wood-800/80 hover:bg-wood-700 text-parchment-200 border border-wood-600 transition" title="Bloquear tela">
+
+        <!-- Popover Amigável de Status de Sincronização (Sem chaves ou dados técnicos) -->
+        <div id="syncPopover" class="hidden absolute right-0 top-full mt-2 w-72 parchment-card rounded-2xl p-4 shadow-2xl border border-amberbrass-500/40 text-wood-900 z-40 space-y-3">
+          <div class="flex items-center justify-between border-b border-parchment-300 pb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-wood-800">Status da Nuvem</span>
+            <button type="button" id="closeSyncPopoverBtn" class="text-xs text-wood-600 hover:text-wood-900 px-1">✕</button>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            <div class="flex items-center justify-between bg-parchment-100/90 border border-parchment-300 rounded-xl p-2.5">
+              <div>
+                <p class="font-semibold text-wood-900">Catálogo de Partituras</p>
+                <p id="syncCatalogDetail" class="text-[11px] text-wood-600">Verificando conexão...</p>
+              </div>
+              <span id="syncCatalogBadge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">Local</span>
+            </div>
+
+            <div class="flex items-center justify-between bg-parchment-100/90 border border-parchment-300 rounded-xl p-2.5">
+              <div>
+                <p class="font-semibold text-wood-900">Google Drive (PDFs)</p>
+                <p id="syncDriveDetail" class="text-[11px] text-wood-600">Para envio de novos arquivos</p>
+              </div>
+              <span id="syncDriveBadge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">Inativo</span>
+            </div>
+          </div>
+
+          <div class="pt-1 flex flex-col gap-1.5">
+            <button type="button" id="refreshSyncNowBtn" class="w-full py-2 px-3 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition flex items-center justify-center gap-1.5">
+              <span>↻</span>
+              <span>Atualizar Catálogo Agora</span>
+            </button>
+            <button type="button" id="connectGoogleDriveBtn" class="w-full brass-btn py-2 px-3 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <span id="driveBtnLabel">Conectar Google Drive</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" id="lockAppBtn" class="px-2.5 py-2 rounded-xl text-xs bg-wood-800/80 hover:bg-wood-700 text-parchment-200 border border-wood-600 transition" title="Bloquear acesso">
           🔒
         </button>
       </div>
     </div>
   </header>
 
-  <!-- BANNER DE DIAGNÓSTICO DE API -->
-  <div id="apiDiagnosticAlert" class="hidden bg-amber-50 border-b border-amber-300 px-4 sm:px-6 py-2.5 text-xs text-wood-900">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-base">⚠️</span>
-        <span id="apiDiagnosticAlertText" class="font-medium">Verifique a conexão com o Google Drive ou Supabase.</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button type="button" id="alertOpenConfigBtn" class="px-2.5 py-1 rounded-lg bg-wood-800 text-parchment-50 font-semibold hover:bg-wood-700 transition">
-          Abrir Diagnóstico
-        </button>
-        <button type="button" id="alertDismissBtn" class="px-2 py-1 text-wood-600 hover:text-wood-900">✕</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FAIXA HERO EDITORIAL (EXIBIDA NA BIBLIOTECA PRINCIPAL) -->
-  <section id="heroBannerSection" class="relative border-b border-parchment-300 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-      <div class="parchment-card rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-        <div class="p-5 sm:p-6 lg:col-span-7 flex flex-col justify-between space-y-4">
-          <div class="space-y-1.5">
-            <div class="flex flex-wrap items-center gap-2 text-xs text-amberbrass-700 font-semibold uppercase tracking-widest">
-              <span>Edição de Conservatório</span>
-              <span>•</span>
-              <span id="activeUserGreeting">Sessão: César</span>
-            </div>
-            <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-wood-900 leading-tight">
-              Catálogo Musical Indexado &amp; Estante Digital
-            </h2>
-            <p class="text-xs sm:text-sm text-wood-700 leading-relaxed">
-              Pesquise instantaneamente por obra, compositor, arranjador, tonalidade, formação instrumental ou nível técnico. Todos os PDFs permanecem sincronizados na sua pasta privada do Google Drive.
-            </p>
+  <!-- RESUMO DO ACERVO (EXIBIDO NA BIBLIOTECA PRINCIPAL) -->
+  <section id="heroBannerSection" class="border-b border-parchment-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-3">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="parchment-card rounded-xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-wood-600 block">Total no Acervo</span>
+            <strong id="statTotalScores" class="font-editorial text-2xl sm:text-3xl text-wood-900">0</strong>
           </div>
-
-          <!-- Resumo rápido de estatísticas -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
-              <span class="text-[11px] text-wood-600 block">Total no Acervo</span>
-              <strong id="statTotalScores" class="font-editorial text-2xl text-wood-900">0</strong>
-            </div>
-            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
-              <span class="text-[11px] text-wood-600 block">Catalogadas</span>
-              <strong id="statCategorized" class="font-editorial text-2xl text-amberbrass-700">0</strong>
-            </div>
-            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
-              <span class="text-[11px] text-wood-600 block">Na Fila (Inbox)</span>
-              <strong id="statPendingInbox" class="font-editorial text-2xl text-wood-800">0</strong>
-            </div>
-            <div class="bg-parchment-200/60 border border-parchment-300 rounded-xl px-3 py-2">
-              <span class="text-[11px] text-wood-600 block">Favoritas do Casal</span>
-              <strong id="statFavorites" class="font-editorial text-2xl text-amberbrass-600">0</strong>
-            </div>
-          </div>
+          <span class="text-xl opacity-75">📚</span>
         </div>
-
-        <div class="lg:col-span-5 relative min-h-[160px] sm:min-h-[200px]">
-          <img src="./public/assets/hero.jpg" alt="Estante de Partituras Clássica" class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-r from-parchment-100 via-parchment-100/20 to-transparent lg:block hidden"></div>
+        <div class="parchment-card rounded-xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-wood-600 block">Catalogadas</span>
+            <strong id="statCategorized" class="font-editorial text-2xl sm:text-3xl text-amberbrass-700">0</strong>
+          </div>
+          <span class="text-xl opacity-75">🎼</span>
+        </div>
+        <div class="parchment-card rounded-xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-wood-600 block">Para Triagem</span>
+            <strong id="statPendingInbox" class="font-editorial text-2xl sm:text-3xl text-wood-800">0</strong>
+          </div>
+          <span class="text-xl opacity-75">📥</span>
+        </div>
+        <div class="parchment-card rounded-xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-wood-600 block">Favoritas</span>
+            <strong id="statFavorites" class="font-editorial text-2xl sm:text-3xl text-amberbrass-600">0</strong>
+          </div>
+          <span class="text-xl opacity-75">★</span>
         </div>
       </div>
     </div>
@@ -264,41 +245,37 @@
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
 
     <!-- ========================================================= -->
-    <!-- ABA 1: BIBLIOTECA PRINCIPAL (BUSCA REATIVA + FILTROS)     -->
+    <!-- ABA 1: BIBLIOTECA PRINCIPAL                               -->
     <!-- ========================================================= -->
     <section id="viewLibrary" class="space-y-5">
-      <!-- Barra de Busca Global e Filtros Facetados -->
+      <!-- Barra de Busca e Filtros -->
       <div class="parchment-card rounded-2xl p-4 sm:p-5 space-y-4">
         <div class="flex flex-col md:flex-row gap-3">
-          <!-- Busca Universal Reativa (com debounce) -->
           <div class="relative flex-1">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-wood-600">🔍</span>
             <input
               id="globalSearchInput"
               type="search"
-              placeholder="Buscar por título da obra, compositor, arranjador, estilo ou tag (ex.: Chopin, Bossa Nova, Recital)..."
+              placeholder="Buscar por título, compositor, arranjador, formação ou tag..."
               class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-parchment-50 border border-parchment-300 text-sm text-wood-900 placeholder-wood-600/70 focus:outline-none focus:ring-2 focus:ring-amberbrass-500"
             />
             <button type="button" id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-wood-600 hover:text-wood-900">✕</button>
           </div>
 
-          <!-- Alternância Grade / Tabela + Nova Partitura Manual -->
+          <!-- Alternância Grade / Tabela -->
           <div class="flex items-center gap-2">
             <div class="flex bg-parchment-200 p-1 rounded-xl border border-parchment-300">
-              <button type="button" id="viewModeGridBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition">
+              <button type="button" id="viewModeGridBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition">
                 Grade
               </button>
-              <button type="button" id="viewModeTableBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition">
+              <button type="button" id="viewModeTableBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition">
                 Tabela
               </button>
             </div>
-            <button type="button" id="newManualScoreBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition">
-              ＋ Catalogar Manual
-            </button>
           </div>
         </div>
 
-        <!-- Filtros Facetados Combinados (Formação, Tonalidade, Dificuldade, Estilo) -->
+        <!-- Filtros Combinados -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
           <div>
             <label for="filterInstrumentation" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Formação Instrumental</label>
@@ -315,7 +292,7 @@
           </div>
 
           <div>
-            <label for="filterKey" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Tonalidade (Key)</label>
+            <label for="filterKey" class="block text-[11px] font-semibold uppercase tracking-wider text-wood-600 mb-1">Tonalidade</label>
             <select id="filterKey" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
               <option value="">Todas as tonalidades</option>
               <option value="C Major">C Major (Dó Maior)</option>
@@ -359,20 +336,20 @@
           </div>
         </div>
 
-        <!-- Chips de Tags Rápidas e Botão Limpar Filtros -->
+        <!-- Tags Rápidas e Contador -->
         <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-parchment-200">
           <div class="flex flex-wrap items-center gap-1.5" id="tagChipsContainer">
-            <span class="text-[11px] font-semibold text-wood-600 mr-1">Tags rápidas:</span>
+            <span class="text-[11px] font-semibold text-wood-600 mr-1">Tags:</span>
             <button type="button" data-tag-chip="" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-wood-800 text-parchment-50 transition">Todas</button>
             <button type="button" data-tag-chip="favoritas" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">★ Favoritas</button>
             <button type="button" data-tag-chip="repertório 2026" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Repertório 2026</button>
-            <button type="button" data-tag-chip="dueto casal" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Dueto Casal</button>
+            <button type="button" data-tag-chip="dueto casal" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Dueto</button>
             <button type="button" data-tag-chip="estudo" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Estudo</button>
             <button type="button" data-tag-chip="recital" class="tag-chip-btn px-2.5 py-1 rounded-full text-xs font-medium bg-parchment-200 text-wood-800 hover:bg-parchment-300 transition">Recital</button>
           </div>
 
           <div class="flex items-center gap-3">
-            <span id="resultsCounterText" class="text-xs text-wood-600 font-medium">Mostrando 0 partituras</span>
+            <span id="resultsCounterText" class="text-xs text-wood-600 font-medium">0 partituras</span>
             <button type="button" id="resetFiltersBtn" class="text-xs font-semibold text-amberbrass-700 hover:text-amberbrass-600 underline">
               Limpar filtros
             </button>
@@ -380,10 +357,10 @@
         </div>
       </div>
 
-      <!-- Grade de Partituras (ScoreGrid) -->
+      <!-- Grade de Partituras -->
       <div id="scoreGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-      <!-- Tabela de Partituras (ScoreTable) -->
+      <!-- Tabela de Partituras -->
       <div id="scoreTableContainer" class="hidden parchment-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
@@ -405,22 +382,21 @@
     </section>
 
     <!-- ========================================================= -->
-    <!-- ABA 2: UPLOAD EM LOTE & FILA DE ENTRADA (INBOX)           -->
+    <!-- ABA 2: ENVIAR PDFS & FILA DE ENTRADA                      -->
     <!-- ========================================================= -->
     <section id="viewInbox" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Zona de Bulk Upload (Arrastar e Soltar múltiplos PDFs) -->
+        <!-- Zona de Upload -->
         <div class="lg:col-span-7 parchment-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
           <div>
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="text-xs font-semibold uppercase tracking-widest text-amberbrass-700">Fluxo Real Google Drive API v3 + Supabase</span>
+              <h2 class="font-editorial text-3xl font-bold text-wood-900">Enviar Partituras em PDF</h2>
               <span id="inboxAuthStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
-                Google Drive: Aguardando Login OAuth
+                Drive desconectado
               </span>
             </div>
-            <h2 class="font-editorial text-3xl font-bold text-wood-900 mt-1">Upload em Lote para o Google Drive (/Inbox)</h2>
-            <p class="text-xs sm:text-sm text-wood-700 mt-1 leading-relaxed">
-              Selecione múltiplos arquivos PDF ou arraste uma pasta inteira. O Melos extrai automaticamente sugestões de <strong>Compositor - Obra (Arranjador).pdf</strong>, envia os PDFs para a pasta <code class="bg-parchment-200 px-1.5 py-0.5 rounded">/Partituras/Inbox</code> no Google Drive e registra tudo na fila de triagem.
+            <p class="text-xs sm:text-sm text-wood-700 mt-1.5 leading-relaxed">
+              Selecione um ou mais arquivos PDF do seu dispositivo. O título, o compositor e o arranjador são identificados automaticamente quando o arquivo segue o padrão <strong>Compositor - Obra (Arranjador).pdf</strong>.
             </p>
           </div>
 
@@ -432,19 +408,16 @@
               📄
             </div>
             <div>
-              <p class="text-sm font-semibold text-wood-900">Arraste e solte múltiplos PDFs de partituras aqui</p>
-              <p class="text-xs text-wood-600 mt-0.5">ou clique para selecionar arquivos PDF do seu computador/tablet</p>
+              <p class="text-sm font-semibold text-wood-900">Arraste e solte seus PDFs aqui</p>
+              <p class="text-xs text-wood-600 mt-0.5">ou clique abaixo para escolher do computador ou celular</p>
             </div>
             <input id="bulkPdfInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
             <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
-              <button type="button" id="selectPdfFilesBtn" class="brass-btn px-4 py-2 rounded-xl text-xs font-semibold transition">
-                📤 Selecionar e Enviar PDFs ao Google Drive
+              <button type="button" id="selectPdfFilesBtn" class="brass-btn px-4 py-2.5 rounded-xl text-xs font-semibold transition">
+                📤 Selecionar Arquivos PDF
               </button>
-              <button type="button" id="inboxConnectDriveBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-50 transition">
-                🔗 Autorizar Google Drive Agora
-              </button>
-              <button type="button" id="simulateBatchUploadBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
-                ✨ Simular Lote de 3 PDFs de Teste
+              <button type="button" id="inboxConnectDriveBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-50 transition">
+                🔗 Conectar Google Drive
               </button>
             </div>
           </div>
@@ -452,7 +425,7 @@
           <!-- Barra de Progresso de Upload -->
           <div id="uploadProgressBox" class="hidden bg-parchment-200/80 border border-parchment-300 rounded-xl p-4 space-y-2">
             <div class="flex items-center justify-between text-xs font-semibold text-wood-800">
-              <span id="uploadProgressText">Enviando arquivos para o Google Drive...</span>
+              <span id="uploadProgressText">Enviando arquivos...</span>
               <span id="uploadProgressPercent">0%</span>
             </div>
             <div class="w-full h-2 bg-parchment-300 rounded-full overflow-hidden">
@@ -461,274 +434,287 @@
           </div>
         </div>
 
-        <!-- Card Visual da Bandeja de Manuscritos (Inbox) -->
+        <!-- Card Resumo da Fila -->
         <div class="lg:col-span-5 parchment-card rounded-2xl overflow-hidden flex flex-col justify-between">
           <div class="relative h-48 overflow-hidden">
-            <img src="./public/assets/inbox.jpg" alt="Bandeja de Manuscritos Inbox" class="w-full h-full object-cover" />
+            <img src="./public/assets/inbox.jpg" alt="Bandeja de Partituras" class="w-full h-full object-cover" />
             <div class="absolute inset-0 bg-gradient-to-t from-wood-900/85 via-wood-900/30 to-transparent"></div>
             <div class="absolute bottom-3 left-4 right-4 text-parchment-50">
-              <span class="text-[11px] uppercase tracking-widest text-amberbrass-400 font-semibold">Bandeja de Triagem</span>
-              <h3 class="font-editorial text-2xl font-bold">Partituras Aguardando Catalogação</h3>
+              <span class="text-[11px] uppercase tracking-widest text-amberbrass-400 font-semibold">Fila de Entrada</span>
+              <h3 class="font-editorial text-2xl font-bold">Aguardando Triagem</h3>
             </div>
           </div>
           <div class="p-5 space-y-3 flex-1 flex flex-col justify-between">
             <p class="text-xs text-wood-700 leading-relaxed">
-              As partituras enviadas recebem <code class="bg-parchment-200 px-1 py-0.5 rounded">is_categorized = false</code> até que você ou sua namorada revisem os metadados na tela dividida (Split-Screen).
+              As partituras recém-enviadas ficam salvas nesta fila até que você revise e confirme as informações musicais na aba de Triagem.
             </p>
             <div class="flex items-center justify-between bg-parchment-200/70 rounded-xl p-3 border border-parchment-300">
               <div>
-                <span class="text-xs text-wood-600 block">Pendentes na Fila</span>
+                <span class="text-xs text-wood-600 block">Pendentes de revisão</span>
                 <strong id="inboxCardCounter" class="font-editorial text-2xl text-wood-900">0 arquivos</strong>
               </div>
               <button type="button" id="startTriageFromInboxBtn" class="brass-btn px-4 py-2.5 rounded-xl text-xs font-semibold transition">
-                Iniciar Triagem Split-Screen →
+                Ir para Triagem →
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Lista de Partituras Não-Categorizadas (InboxList) -->
+      <!-- Lista de Partituras Pendentes -->
       <div class="parchment-card rounded-2xl p-5 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h3 class="font-editorial text-2xl font-bold text-wood-900">Fila de Não-Categorizadas (Inbox)</h3>
-            <p class="text-xs text-wood-600">Clique em "Catalogar em Split-Screen" em qualquer item para visualizar o PDF ao lado do formulário.</p>
-          </div>
+        <div>
+          <h3 class="font-editorial text-2xl font-bold text-wood-900">Partituras Pendentes de Triagem</h3>
+          <p class="text-xs text-wood-600">Selecione um item abaixo para abrir o PDF e confirmar seus dados.</p>
         </div>
         <div id="inboxListContainer" class="space-y-2.5"></div>
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- ABA 3: TELA DE TRIAGEM E EDIÇÃO DIVIDIDA (SPLIT SCREEN)   -->
+    <!-- ABA 3: TRIAGEM E EDIÇÃO                                   -->
     <!-- ========================================================= -->
     <section id="viewTriage" class="hidden space-y-4">
-      <!-- Barra Superior da Triagem com Navegação Sequencial e Atalhos -->
-      <div class="parchment-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <span class="w-9 h-9 rounded-xl bg-amberbrass-500/20 border border-amberbrass-500/40 flex items-center justify-center text-lg">⚖️</span>
-          <div>
-            <h2 class="font-editorial text-2xl font-bold text-wood-900">Estação de Triagem &amp; Catalogação (Split-Screen)</h2>
-            <p id="triageQueuePositionText" class="text-xs text-wood-600">Selecione uma partitura da fila para catalogar</p>
-          </div>
-        </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="hidden xl:inline-block text-[11px] text-wood-600 bg-parchment-200 px-2.5 py-1 rounded-lg border border-parchment-300">
-            Atalhos: <strong>Alt + ←/→</strong> trocar PDF • <strong>Ctrl + Enter</strong> salvar e aprovar
-          </span>
-          <button type="button" id="prevTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
-            ← Anterior
+      <!-- ESTADO VAZIO DA TRIAGEM (EXIBIDO QUANDO NÃO HÁ NADA PENDENTE) -->
+      <div id="triageEmptyState" class="hidden parchment-card rounded-2xl p-10 text-center max-w-2xl mx-auto my-6 space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-amberbrass-500/15 border border-amberbrass-500/40 flex items-center justify-center text-3xl mx-auto">
+          ✨
+        </div>
+        <div class="space-y-1.5">
+          <h2 class="font-editorial text-3xl font-bold text-wood-900">Não há partituras para realizar triagem</h2>
+          <p class="text-xs sm:text-sm text-wood-700 max-w-md mx-auto leading-relaxed">
+            Todas as partituras do acervo já foram revisadas e estão catalogadas na Biblioteca Principal. Quando você enviar novos arquivos PDF, eles aparecerão aqui.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <button type="button" id="emptyTriageGoLibraryBtn" class="brass-btn px-4 py-2.5 rounded-xl text-xs font-semibold transition">
+            🎼 Ver Biblioteca Principal
           </button>
-          <select id="triageSelectorDropdown" class="rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-1.5 text-xs text-wood-900 max-w-xs focus:outline-none focus:ring-2 focus:ring-amberbrass-500"></select>
-          <button type="button" id="nextTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
-            Próxima →
+          <button type="button" id="emptyTriageGoUploadBtn" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition">
+            📥 Enviar Novos PDFs
           </button>
         </div>
       </div>
 
-      <!-- Container Dividido (Esquerda: PDF Viewer / Direita: ScoreForm) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <!-- Painel de Visualização (Esquerda - 7 colunas) -->
-        <div class="lg:col-span-7 parchment-card rounded-2xl overflow-hidden flex flex-col h-[640px]">
-          <div class="bg-wood-800 text-parchment-100 px-4 py-2.5 flex items-center justify-between text-xs border-b border-amberbrass-500/40">
-            <div class="flex items-center gap-2 truncate">
-              <span>📄</span>
-              <span id="triageFilenameHeader" class="font-medium truncate">arquivo_original.pdf</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" id="toggleTriageViewerModeBtn" class="px-2.5 py-1 rounded bg-wood-700 hover:bg-wood-600 text-[11px] text-amberbrass-400 transition">
-                Alternar Drive Iframe / Folha Musical
-              </button>
+      <!-- ÁREA DE TRABALHO DA TRIAGEM (EXIBIDA QUANDO HÁ ITEM PENDENTE OU EM EDIÇÃO) -->
+      <div id="triageWorkspace" class="space-y-4">
+        <!-- Barra Superior da Triagem -->
+        <div class="parchment-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-amberbrass-500/20 border border-amberbrass-500/40 flex items-center justify-center text-lg">⚖️</span>
+            <div>
+              <h2 id="triageHeaderTitle" class="font-editorial text-2xl font-bold text-wood-900">Triagem de Partituras</h2>
+              <p id="triageQueuePositionText" class="text-xs text-wood-600">Revisando informações da partitura</p>
             </div>
           </div>
 
-          <!-- Visualizador Híbrido: Iframe Google Drive + Renderizador de Partitura Clássica -->
-          <div id="triagePdfContainer" class="flex-1 bg-parchment-100 relative overflow-y-auto flex flex-col">
-            <!-- Iframe Real do Google Drive PDF Viewer -->
-            <iframe
-              id="triageDriveIframe"
-              title="Google Drive PDF Viewer"
-              class="w-full h-full hidden border-0"
-              allow="autoplay"
-            ></iframe>
+          <!-- Controles de Navegação na Fila de Triagem -->
+          <div id="triageQueueNavControls" class="flex flex-wrap items-center gap-2">
+            <button type="button" id="prevTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+              ← Anterior
+            </button>
+            <select id="triageSelectorDropdown" class="rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-1.5 text-xs text-wood-900 max-w-xs focus:outline-none focus:ring-2 focus:ring-amberbrass-500"></select>
+            <button type="button" id="nextTriageItemBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+              Próxima →
+            </button>
+          </div>
 
-            <!-- Folha de Partitura de Alta Resolução (Preview Integrado quando arquivo é local/demo) -->
-            <div id="triageSheetPreviewFallback" class="p-6 sm:p-8 flex-1 flex flex-col justify-between bg-[#FCF9F2] text-wood-900">
-              <div class="border-2 border-wood-800/30 p-6 rounded-xl flex-1 flex flex-col justify-between space-y-6">
-                <div class="text-center border-b border-parchment-300 pb-4 space-y-1">
-                  <span id="previewSheetGenreBadge" class="text-[10px] uppercase tracking-widest text-amberbrass-700 font-semibold">Edição Urtext Digital • Melos</span>
-                  <h3 id="previewSheetTitle" class="font-editorial text-3xl font-bold text-wood-900">Título da Obra</h3>
-                  <p id="previewSheetComposer" class="text-xs italic text-wood-700">Compositor • Arranjador</p>
-                  <div class="flex items-center justify-center gap-3 pt-1 text-[11px] text-wood-600">
-                    <span id="previewSheetInstrumentation">Piano Solo</span>
-                    <span>•</span>
-                    <span id="previewSheetKey">C Major</span>
-                    <span>•</span>
-                    <span id="previewSheetDifficulty">Intermediário</span>
-                  </div>
-                </div>
-
-                <!-- Pautas Musicais Estilizadas (Renderização SVG de Alta Nitidez) -->
-                <div class="space-y-6 py-2">
-                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
-                    <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
-                    <span class="text-xs font-serif italic text-wood-700 mr-4">Andante cantabile (♩ = 76)</span>
-                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
-                      <span>♩</span><span>♫</span><span>♩.</span><span>♪</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span>
-                    </div>
-                  </div>
-                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
-                    <span class="text-2xl text-wood-800 select-none mr-4">𝄢</span>
-                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
-                      <span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>♩</span><span>𝅗𝅥</span>
-                    </div>
-                  </div>
-                  <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
-                    <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
-                    <span class="text-xs font-serif italic text-wood-700 mr-4">dolce espressivo</span>
-                    <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
-                      <span>♫</span><span>♫</span><span>♩</span><span>♩</span><span>𝅗𝅥</span><span>♩</span><span>𝄽</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-parchment-200/80 rounded-xl p-3 border border-parchment-300 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div>
-                    <span class="font-semibold text-wood-900">Google Drive File ID:</span>
-                    <code id="previewSheetDriveId" class="ml-1 bg-parchment-50 px-1.5 py-0.5 rounded text-wood-700">1AbC...</code>
-                  </div>
-                  <span class="text-[11px] text-wood-600">Embed: <code>https://drive.google.com/file/d/{id}/preview</code></span>
-                </div>
-              </div>
-            </div>
+          <!-- Botão Voltar (exibido quando está apenas editando uma partitura da Biblioteca) -->
+          <div id="triageEditLibraryBackWrap" class="hidden">
+            <button type="button" id="cancelEditBackToLibraryBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
+              ← Voltar para a Biblioteca
+            </button>
           </div>
         </div>
 
-        <!-- Painel de Metadados (Direita - 5 colunas) -->
-        <div class="lg:col-span-5 parchment-card rounded-2xl p-5 space-y-4">
-          <div class="flex items-center justify-between border-b border-parchment-200 pb-3">
-            <div>
-              <span class="text-[11px] uppercase tracking-wider font-semibold text-amberbrass-700">Formulário de Catalogação</span>
-              <h3 class="font-editorial text-2xl font-bold text-wood-900">Metadados Musicais</h3>
+        <!-- Container Dividido (Esquerda: PDF / Direita: Formulário) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          <!-- Painel de Visualização do PDF (Esquerda - 7 colunas) -->
+          <div class="lg:col-span-7 parchment-card rounded-2xl overflow-hidden flex flex-col h-[620px]">
+            <div class="bg-wood-800 text-parchment-100 px-4 py-2.5 flex items-center justify-between text-xs border-b border-amberbrass-500/40">
+              <div class="flex items-center gap-2 truncate">
+                <span>📄</span>
+                <span id="triageFilenameHeader" class="font-medium truncate">partitura.pdf</span>
+              </div>
             </div>
-            <span id="triageStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
-              Pendente (Inbox)
-            </span>
+
+            <div id="triagePdfContainer" class="flex-1 bg-parchment-100 relative overflow-y-auto flex flex-col">
+              <!-- Iframe do PDF -->
+              <iframe
+                id="triageDriveIframe"
+                title="Visualizador de Partitura PDF"
+                class="w-full h-full hidden border-0"
+                allow="autoplay"
+              ></iframe>
+
+              <!-- Folha de Partitura Ilustrativa (quando não há PDF externo carregado) -->
+              <div id="triageSheetPreviewFallback" class="p-6 sm:p-8 flex-1 flex flex-col justify-between bg-[#FCF9F2] text-wood-900">
+                <div class="border-2 border-wood-800/30 p-6 rounded-xl flex-1 flex flex-col justify-between space-y-6">
+                  <div class="text-center border-b border-parchment-300 pb-4 space-y-1">
+                    <span id="previewSheetGenreBadge" class="text-[10px] uppercase tracking-widest text-amberbrass-700 font-semibold">Visualização da Ficha Musical</span>
+                    <h3 id="previewSheetTitle" class="font-editorial text-3xl font-bold text-wood-900">Título da Obra</h3>
+                    <p id="previewSheetComposer" class="text-xs italic text-wood-700">Compositor</p>
+                    <div class="flex items-center justify-center gap-3 pt-1 text-[11px] text-wood-600">
+                      <span id="previewSheetInstrumentation">Piano Solo</span>
+                      <span>•</span>
+                      <span id="previewSheetKey">C Major</span>
+                      <span>•</span>
+                      <span id="previewSheetDifficulty">Intermediário</span>
+                    </div>
+                  </div>
+
+                  <div class="space-y-6 py-2">
+                    <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                      <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
+                      <span class="text-xs font-serif italic text-wood-700 mr-4">Andante cantabile</span>
+                      <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                        <span>♩</span><span>♫</span><span>♩.</span><span>♪</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span>
+                      </div>
+                    </div>
+                    <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                      <span class="text-2xl text-wood-800 select-none mr-4">𝄢</span>
+                      <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                        <span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>♩</span><span>𝅗𝅥</span>
+                      </div>
+                    </div>
+                    <div class="staff-lines h-14 relative flex items-center px-3 border-l-2 border-r-2 border-wood-800">
+                      <span class="text-3xl text-wood-800 select-none mr-3">𝄞</span>
+                      <span class="text-xs font-serif italic text-wood-700 mr-4">dolce espressivo</span>
+                      <div class="flex-1 flex items-center justify-around text-xl text-wood-900 select-none">
+                        <span>♫</span><span>♫</span><span>♩</span><span>♩</span><span>𝅗𝅥</span><span>♩</span><span>𝄽</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bg-parchment-200/80 rounded-xl p-3 border border-parchment-300 text-center text-xs text-wood-700">
+                    Arquivo: <strong id="previewSheetFilename">partitura.pdf</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <form id="triageMetadataForm" class="space-y-3.5">
-            <input type="hidden" id="triageScoreId" />
-
-            <div>
-              <label for="triageTitle" class="block text-xs font-semibold text-wood-800 mb-1">Título da Obra / Peça *</label>
-              <input id="triageTitle" type="text" required placeholder="Ex.: Clair de Lune (Suite Bergamasque)" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Painel de Informações da Partitura (Direita - 5 colunas) -->
+          <div class="lg:col-span-5 parchment-card rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-parchment-200 pb-3">
               <div>
-                <label for="triageComposer" class="block text-xs font-semibold text-wood-800 mb-1">Compositor / Autor *</label>
-                <input id="triageComposer" list="composerSuggestions" type="text" required placeholder="Ex.: Claude Debussy" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-                <datalist id="composerSuggestions">
-                  <option value="Frédéric Chopin"></option>
-                  <option value="Johann Sebastian Bach"></option>
-                  <option value="Claude Debussy"></option>
-                  <option value="Heitor Villa-Lobos"></option>
-                  <option value="Tom Jobim"></option>
-                  <option value="Ludwig van Beethoven"></option>
-                  <option value="Ernesto Nazareth"></option>
-                  <option value="Joe Hisaishi"></option>
-                </datalist>
+                <h3 class="font-editorial text-2xl font-bold text-wood-900">Dados da Partitura</h3>
               </div>
-              <div>
-                <label for="triageArranger" class="block text-xs font-semibold text-wood-800 mb-1">Arranjador / Transcritor</label>
-                <input id="triageArranger" type="text" placeholder="Ex.: Edição Henle / Arranjo próprio" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-              </div>
+              <span id="triageStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                Pendente
+              </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="triageInstrumentation" class="block text-xs font-semibold text-wood-800 mb-1">Formação Instrumental</label>
-                <select id="triageInstrumentation" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
-                  <option value="Piano Solo">Piano Solo</option>
-                  <option value="Piano a 4 mãos">Piano a 4 mãos</option>
-                  <option value="Voz e Piano">Voz e Piano</option>
-                  <option value="Violino e Piano">Violino e Piano</option>
-                  <option value="Violão / Guitarra">Violão / Guitarra</option>
-                  <option value="Partitura Completa">Partitura Completa</option>
-                  <option value="Quarteto de Cordas">Quarteto de Cordas</option>
-                </select>
-              </div>
-              <div>
-                <label for="triageMusicalKey" class="block text-xs font-semibold text-wood-800 mb-1">Tonalidade (Musical Key)</label>
-                <select id="triageMusicalKey" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
-                  <option value="C Major">C Major (Dó Maior)</option>
-                  <option value="G Major">G Major (Sol Maior)</option>
-                  <option value="D Major">D Major (Ré Maior)</option>
-                  <option value="F Major">F Major (Fá Maior)</option>
-                  <option value="Bb Major">Bb Major (Si♭ Maior)</option>
-                  <option value="Eb Major">Eb Major (Mi♭ Maior)</option>
-                  <option value="Db Major">Db Major (Ré♭ Maior)</option>
-                  <option value="A minor">A minor (Lá menor)</option>
-                  <option value="E minor">E minor (Mi menor)</option>
-                  <option value="D minor">D minor (Ré menor)</option>
-                  <option value="C# minor">C# minor (Dó♯ menor)</option>
-                </select>
-              </div>
-            </div>
+            <form id="triageMetadataForm" class="space-y-3.5">
+              <input type="hidden" id="triageScoreId" />
+              <!-- Campo drive_file_id oculto conforme solicitado -->
+              <input type="hidden" id="triageDriveFileId" />
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label for="triageDifficulty" class="block text-xs font-semibold text-wood-800 mb-1">Grau de Exigência Técnica</label>
-                <select id="triageDifficulty" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
-                  <option value="Iniciante">Iniciante</option>
-                  <option value="Intermediário">Intermediário</option>
-                  <option value="Avançado">Avançado</option>
-                  <option value="Virtuoso">Virtuoso</option>
-                </select>
+                <label for="triageTitle" class="block text-xs font-semibold text-wood-800 mb-1">Título da Obra *</label>
+                <input id="triageTitle" type="text" required placeholder="Ex.: Clair de Lune" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
               </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="triageComposer" class="block text-xs font-semibold text-wood-800 mb-1">Compositor / Autor *</label>
+                  <input id="triageComposer" list="composerSuggestions" type="text" required placeholder="Ex.: Claude Debussy" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+                  <datalist id="composerSuggestions">
+                    <option value="Frédéric Chopin"></option>
+                    <option value="Johann Sebastian Bach"></option>
+                    <option value="Claude Debussy"></option>
+                    <option value="Heitor Villa-Lobos"></option>
+                    <option value="Tom Jobim"></option>
+                    <option value="Ludwig van Beethoven"></option>
+                    <option value="Ernesto Nazareth"></option>
+                    <option value="Joe Hisaishi"></option>
+                  </datalist>
+                </div>
+                <div>
+                  <label for="triageArranger" class="block text-xs font-semibold text-wood-800 mb-1">Arranjador / Edição</label>
+                  <input id="triageArranger" type="text" placeholder="Opcional" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="triageInstrumentation" class="block text-xs font-semibold text-wood-800 mb-1">Formação Instrumental</label>
+                  <select id="triageInstrumentation" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                    <option value="Piano Solo">Piano Solo</option>
+                    <option value="Piano a 4 mãos">Piano a 4 mãos</option>
+                    <option value="Voz e Piano">Voz e Piano</option>
+                    <option value="Violino e Piano">Violino e Piano</option>
+                    <option value="Violão / Guitarra">Violão / Guitarra</option>
+                    <option value="Partitura Completa">Partitura Completa</option>
+                    <option value="Quarteto de Cordas">Quarteto de Cordas</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="triageMusicalKey" class="block text-xs font-semibold text-wood-800 mb-1">Tonalidade</label>
+                  <select id="triageMusicalKey" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                    <option value="C Major">C Major (Dó Maior)</option>
+                    <option value="G Major">G Major (Sol Maior)</option>
+                    <option value="D Major">D Major (Ré Maior)</option>
+                    <option value="F Major">F Major (Fá Maior)</option>
+                    <option value="Bb Major">Bb Major (Si♭ Maior)</option>
+                    <option value="Eb Major">Eb Major (Mi♭ Maior)</option>
+                    <option value="Db Major">Db Major (Ré♭ Maior)</option>
+                    <option value="A minor">A minor (Lá menor)</option>
+                    <option value="E minor">E minor (Mi menor)</option>
+                    <option value="D minor">D minor (Ré menor)</option>
+                    <option value="C# minor">C# minor (Dó♯ menor)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="triageDifficulty" class="block text-xs font-semibold text-wood-800 mb-1">Nível Técnico</label>
+                  <select id="triageDifficulty" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                    <option value="Iniciante">Iniciante</option>
+                    <option value="Intermediário">Intermediário</option>
+                    <option value="Avançado">Avançado</option>
+                    <option value="Virtuoso">Virtuoso</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="triageGenre" class="block text-xs font-semibold text-wood-800 mb-1">Gênero / Período</label>
+                  <select id="triageGenre" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
+                    <option value="Romântico">Romântico</option>
+                    <option value="Barroco">Barroco</option>
+                    <option value="Clássico">Clássico</option>
+                    <option value="Impressionista">Impressionista</option>
+                    <option value="MPB / Bossa Nova">MPB / Bossa Nova</option>
+                    <option value="Jazz">Jazz</option>
+                    <option value="Choro">Choro</option>
+                    <option value="Trilha Sonora / Videogames">Trilha Sonora / Videogames</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label for="triageGenre" class="block text-xs font-semibold text-wood-800 mb-1">Gênero / Período</label>
-                <select id="triageGenre" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500">
-                  <option value="Romântico">Romântico</option>
-                  <option value="Barroco">Barroco</option>
-                  <option value="Clássico">Clássico</option>
-                  <option value="Impressionista">Impressionista</option>
-                  <option value="MPB / Bossa Nova">MPB / Bossa Nova</option>
-                  <option value="Jazz">Jazz</option>
-                  <option value="Choro">Choro</option>
-                  <option value="Trilha Sonora / Videogames">Trilha Sonora / Videogames</option>
-                </select>
+                <label for="triageTags" class="block text-xs font-semibold text-wood-800 mb-1">Tags (separadas por vírgula)</label>
+                <input id="triageTags" type="text" placeholder="Ex.: estudo, repertório 2026, favoritas" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
               </div>
-            </div>
 
-            <div>
-              <label for="triageTags" class="block text-xs font-semibold text-wood-800 mb-1">Tags (separadas por vírgula)</label>
-              <input id="triageTags" type="text" placeholder="Ex.: estudo, repertório 2026, favoritas, dueto casal" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-            </div>
-
-            <div>
-              <label for="triageDriveFileId" class="block text-xs font-semibold text-wood-800 mb-1">ID do Arquivo no Google Drive (<code class="text-[11px]">drive_file_id</code>)</label>
-              <input id="triageDriveFileId" type="text" placeholder="Ex.: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-1.5 text-xs font-mono text-wood-800 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-            </div>
-
-            <div class="pt-2 flex flex-col sm:flex-row gap-2">
-              <button type="submit" id="saveAndCategorizeBtn" class="flex-1 brass-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5">
-                <span>✓ Salvar e Mover para Biblioteca Principal</span>
-              </button>
-              <button type="button" id="deleteScoreFromTriageBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 transition">
-                Excluir
-              </button>
-            </div>
-          </form>
+              <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                <button type="submit" id="saveAndCategorizeBtn" class="flex-1 brass-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5">
+                  <span id="saveAndCategorizeBtnText">✓ Salvar e Mover para Biblioteca</span>
+                </button>
+                <button type="button" id="deleteScoreFromTriageBtn" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 transition">
+                  Excluir
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL DE LEITURA EM TELA CHEIA (MODO PEDESTAL / ESTUDO) -->
+  <!-- MODAL DE LEITURA EM TELA CHEIA -->
   <div id="readerModal" class="hidden fixed inset-0 z-40 bg-wood-900/90 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
     <div class="parchment-card w-full max-w-5xl h-[90vh] rounded-2xl overflow-hidden flex flex-col border-2 border-amberbrass-500/50 shadow-2xl">
       <div class="wood-header px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-parchment-50">
@@ -737,9 +723,6 @@
           <p id="readerModalMeta" class="text-xs text-parchment-200">Compositor • Tonalidade • Formação</p>
         </div>
         <div class="flex items-center gap-2">
-          <button type="button" id="toggleReaderModeBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-amberbrass-400 border border-wood-600 transition">
-            Alternar PDF / Ficha
-          </button>
           <a id="readerOpenDriveViewLink" href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-parchment-100 border border-wood-600 transition">
             ↗ Abrir no Drive
           </a>
@@ -747,7 +730,7 @@
             ⬇ Baixar PDF
           </a>
           <button type="button" id="editFromReaderBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-parchment-100 border border-wood-600 transition">
-            ✎ Editar Metadados
+            ✎ Editar
           </button>
           <button type="button" id="closeReaderModalBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-200 border border-wood-600 transition">
             ✕ Fechar
@@ -755,83 +738,7 @@
         </div>
       </div>
 
-      <div id="readerModalBody" class="flex-1 bg-parchment-100 overflow-y-auto p-6 flex flex-col"></div>
-    </div>
-  </div>
-
-  <!-- MODAL DE CONFIGURAÇÃO DE APIs (GITHUB SECRETS, SUPABASE E GOOGLE DRIVE) -->
-  <div id="configModal" class="hidden fixed inset-0 z-40 bg-wood-900/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="parchment-card w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col border-2 border-amberbrass-500/50 shadow-2xl">
-      <div class="wood-header px-5 py-3.5 flex items-center justify-between text-parchment-50">
-        <div>
-          <span class="text-[10px] uppercase tracking-widest text-amberbrass-400 font-semibold block">Arquitetura em Nuvem &amp; Segurança</span>
-          <h3 class="font-editorial text-2xl font-bold">Conexão Supabase, Google Drive &amp; GitHub Secrets</h3>
-        </div>
-        <button type="button" id="closeConfigModalBtn" class="px-2.5 py-1 rounded-lg bg-wood-800 text-parchment-200 hover:text-parchment-50 text-xs">✕</button>
-      </div>
-
-      <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
-        <div class="bg-parchment-200/90 border border-parchment-300 rounded-xl p-4 space-y-2.5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h4 class="font-semibold text-wood-900 flex items-center gap-1.5">
-              <span>🩺</span> Diagnóstico em Tempo Real (GitHub Secrets, Supabase &amp; Google Drive)
-            </h4>
-            <div class="flex flex-wrap items-center gap-2">
-              <button type="button" id="testAllConnectionsBtn" class="px-3 py-1 rounded-lg bg-wood-800 hover:bg-wood-700 text-parchment-50 text-xs font-semibold transition">
-                🔄 Testar Supabase &amp; Drive
-              </button>
-              <button type="button" id="clearLocalMockCacheBtn" class="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 text-xs font-semibold transition">
-                🧹 Limpar Mocks / Cache Local
-              </button>
-            </div>
-          </div>
-          <div id="diagnosticReportBox" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
-          <div class="bg-parchment-50 border border-parchment-300 rounded-lg p-2.5 text-[11px] text-wood-700 space-y-1">
-            <p><strong>Origem JavaScript Atual (deve estar autorizada no Google Cloud Console &gt; Credenciais OAuth 2.0):</strong></p>
-            <code id="currentOriginDisplay" class="block bg-parchment-200 px-2 py-1 rounded font-mono text-wood-900 select-all">https://seu-usuario.github.io</code>
-          </div>
-        </div>
-
-        <form id="apiConfigForm" class="space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="cfgSupabaseUrl" class="block text-xs font-semibold text-wood-800 mb-1">VITE_SUPABASE_URL</label>
-              <input id="cfgSupabaseUrl" type="url" placeholder="https://seu-projeto.supabase.co" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
-            </div>
-            <div>
-              <label for="cfgSupabaseKey" class="block text-xs font-semibold text-wood-800 mb-1">VITE_SUPABASE_ANON_KEY</label>
-              <input id="cfgSupabaseKey" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="cfgGoogleClientId" class="block text-xs font-semibold text-wood-800 mb-1">VITE_GOOGLE_CLIENT_ID (OAuth 2.0)</label>
-              <input id="cfgGoogleClientId" type="text" placeholder="123456-abc.apps.googleusercontent.com" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
-            </div>
-            <div>
-              <label for="cfgDriveFolderId" class="block text-xs font-semibold text-wood-800 mb-1">VITE_GOOGLE_DRIVE_FOLDER_ID (Pasta Inbox)</label>
-              <input id="cfgDriveFolderId" type="text" placeholder="ID da pasta /Partituras/Inbox no Drive" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
-            </div>
-          </div>
-
-          <div>
-            <label for="cfgAppPassword" class="block text-xs font-semibold text-wood-800 mb-1">VITE_APP_PASSWORD (Senha de Acesso do Casal)</label>
-            <input id="cfgAppPassword" type="password" placeholder="Defina a senha privada de desbloqueio" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-xs text-wood-900" />
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
-            <button type="button" id="exportCatalogJsonBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-900 border border-parchment-300 transition">
-              ⬇ Exportar Backup JSON
-            </button>
-            <div class="flex items-center gap-2">
-              <button type="submit" id="saveConfigBtn" class="brass-btn px-4 py-2 rounded-xl text-xs font-semibold transition">
-                Salvar e Conectar
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+      <div id="readerModalBody" class="flex-1 bg-parchment-100 overflow-y-auto p-4 sm:p-6 flex flex-col"></div>
     </div>
   </div>
 
@@ -841,15 +748,15 @@
     <span id="toastMessageText">Operação realizada com sucesso.</span>
   </div>
 
-  <!-- RODAPÉ -->
-  <footer class="border-t border-parchment-300 bg-parchment-200/60 py-4 px-4 sm:px-6 text-xs text-wood-600">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-      <span><strong>Melos</strong> — Biblioteca Privada de Partituras em Nuvem (Fase 1: GitHub Pages + Supabase + Google Drive API v3)</span>
-      <span>Uso exclusivo privado • Pronta para futura migração Docker / Home Server</span>
+  <!-- RODAPÉ ENXUTO -->
+  <footer class="border-t border-parchment-300 bg-parchment-200/60 py-3.5 px-4 sm:px-6 text-xs text-wood-600">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <span><strong>Melos</strong> — Acervo Musical</span>
+      <span id="footerSyncSummary" class="text-[11px] text-wood-600"></span>
     </div>
   </footer>
 
-    <!-- LÓGICA DA APLICAÇÃO -->
+  <!-- LÓGICA DA APLICAÇÃO -->
   <script>
     (function () {
       const injectedEnv = window.__MELOS_ENV__ || {};
@@ -887,42 +794,6 @@
           is_categorized: true,
           created_at: '2026-10-28T14:20:00Z',
           updated_at: '2026-10-29T18:10:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000002',
-          title: 'Noturno Op. 9 Nº 2 em Mi Bemol Maior',
-          composer: 'Frédéric Chopin',
-          arranger: 'Jan Ekier (National Edition)',
-          instrumentation: 'Piano Solo',
-          musical_key: 'Eb Major',
-          difficulty: 'Intermediário',
-          genre: 'Romântico',
-          tags: ['favoritas', 'estudo'],
-          drive_file_id: '1ChopinNocturneOp9No2DriveId002',
-          original_filename: 'Frédéric Chopin - Noturno Op. 9 No 2 (Jan Ekier).pdf',
-          view_url: 'https://drive.google.com/file/d/1ChopinNocturneOp9No2DriveId002/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1ChopinNocturneOp9No2DriveId002',
-          is_categorized: true,
-          created_at: '2026-10-27T11:00:00Z',
-          updated_at: '2026-10-28T09:15:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000003',
-          title: 'Águas de Março (Arranjo Camerístico)',
-          composer: 'Tom Jobim',
-          arranger: 'César & Namorada',
-          instrumentation: 'Piano a 4 mãos',
-          musical_key: 'Bb Major',
-          difficulty: 'Intermediário',
-          genre: 'MPB / Bossa Nova',
-          tags: ['favoritas', 'dueto casal', 'repertório 2026'],
-          drive_file_id: '1JobimAguasDeMarcoDueto003',
-          original_filename: 'Tom Jobim - Águas de Março (Arranjo 4 mãos).pdf',
-          view_url: 'https://drive.google.com/file/d/1JobimAguasDeMarcoDueto003/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1JobimAguasDeMarcoDueto003',
-          is_categorized: true,
-          created_at: '2026-10-26T16:40:00Z',
-          updated_at: '2026-10-29T20:05:00Z'
         }
       ];
 
@@ -966,7 +837,6 @@
         }
       }
 
-      // Sempre prioriza valores não-vazios injetados pelo GitHub Actions (window.__MELOS_ENV__)
       const storedCfg = safeGetStorage(STORAGE_KEY_CONFIG, {});
       const appConfig = {
         supabaseUrl: (injectedEnv.VITE_SUPABASE_URL || storedCfg.supabaseUrl || '').trim(),
@@ -976,11 +846,13 @@
         appPassword: (injectedEnv.VITE_APP_PASSWORD || storedCfg.appPassword || 'melos2026').trim()
       };
 
+      const hasCloudConfigured = Boolean(appConfig.supabaseUrl && appConfig.supabaseKey);
       const localBlobUrls = {};
-      let scores = safeGetStorage(STORAGE_KEY_SCORES, INITIAL_SCORES);
+      let scores = safeGetStorage(STORAGE_KEY_SCORES, hasCloudConfigured ? [] : INITIAL_SCORES);
       let supabaseClient = null;
       let supabaseConnected = false;
-      let lastSupabaseError = '';
+      let isSyncing = false;
+      let lastSyncTimeStr = '';
       let googleAccessToken = '';
       let googleTokenExpiry = 0;
 
@@ -994,11 +866,15 @@
         filterGenre: '',
         activeTagChip: '',
         selectedTriageId: null,
-        useRealDriveIframe: true,
-        readerForceSheetFallback: false,
-        activeReaderScoreId: null,
-        currentUser: 'César'
+        editingFromLibrary: false,
+        activeReaderScoreId: null
       };
+
+      // Restaura sessão se já estava desbloqueada neste navegador
+      const savedSession = safeGetStorage(STORAGE_KEY_SESSION, null);
+      if (savedSession && savedSession.unlocked) {
+        document.getElementById('lockScreen').classList.add('hidden');
+      }
 
       function showToast(message) {
         const toast = document.getElementById('toastNotification');
@@ -1008,102 +884,58 @@
         if (window.__melosToastTimer) clearTimeout(window.__melosToastTimer);
         window.__melosToastTimer = setTimeout(function () {
           toast.classList.add('hidden');
-        }, 4200);
+        }, 4000);
       }
 
-      function showDiagnosticBanner(message) {
-        const banner = document.getElementById('apiDiagnosticAlert');
-        const text = document.getElementById('apiDiagnosticAlertText');
-        text.textContent = message;
-        banner.classList.remove('hidden');
-      }
-
-      function updateDriveStatusUI() {
-        const dot = document.getElementById('driveStatusDot');
-        const label = document.getElementById('driveStatusLabel');
+      function updateSyncStatusUI() {
+        const dot = document.getElementById('syncStatusDot');
+        const label = document.getElementById('syncStatusLabel');
+        const catalogDetail = document.getElementById('syncCatalogDetail');
+        const catalogBadge = document.getElementById('syncCatalogBadge');
+        const driveDetail = document.getElementById('syncDriveDetail');
+        const driveBadge = document.getElementById('syncDriveBadge');
+        const driveBtnLabel = document.getElementById('driveBtnLabel');
         const inboxBadge = document.getElementById('inboxAuthStatusBadge');
-        const hasValidToken = Boolean(googleAccessToken && Date.now() < googleTokenExpiry);
+        const footerSync = document.getElementById('footerSyncSummary');
 
-        if (hasValidToken) {
+        const hasValidDriveToken = Boolean(googleAccessToken && Date.now() < googleTokenExpiry);
+
+        if (isSyncing) {
+          dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          label.textContent = 'Sincronizando...';
+        } else if (supabaseConnected) {
           dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-          label.textContent = 'Drive Conectado';
-          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
-          inboxBadge.textContent = '✓ Google Drive OAuth Ativo';
-        } else if (appConfig.googleClientId) {
-          dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-          label.textContent = 'Autorizar Drive';
-          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300';
-          inboxBadge.textContent = 'Google Drive: Clique para Autorizar OAuth';
+          label.textContent = 'Sincronizado';
+          catalogDetail.textContent = lastSyncTimeStr
+            ? 'Sincronizado às ' + lastSyncTimeStr
+            : 'Sincronização em nuvem ativa';
+          catalogBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          catalogBadge.textContent = 'Ativo';
+          if (footerSync) footerSync.textContent = 'Nuvem sincronizada';
         } else {
-          dot.className = 'w-2 h-2 rounded-full bg-rose-400';
-          label.textContent = 'Sem Client ID';
-          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-300';
-          inboxBadge.textContent = 'Configure VITE_GOOGLE_CLIENT_ID';
+          dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+          label.textContent = 'Modo Local';
+          catalogDetail.textContent = 'Salvo neste dispositivo';
+          catalogBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+          catalogBadge.textContent = 'Local';
+          if (footerSync) footerSync.textContent = '';
         }
-      }
 
-      function renderDiagnosticReport() {
-        const box = document.getElementById('diagnosticReportBox');
-        const originEl = document.getElementById('currentOriginDisplay');
-        if (originEl) {
-          originEl.textContent = window.location.origin || window.location.href;
+        if (hasValidDriveToken) {
+          driveDetail.textContent = 'Pronto para enviar PDFs';
+          driveBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          driveBadge.textContent = 'Conectado';
+          driveBtnLabel.textContent = '✓ Google Drive Conectado';
+          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          inboxBadge.textContent = '✓ Drive conectado';
+        } else {
+          driveDetail.textContent = 'Conecte para enviar novos PDFs';
+          driveBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+          driveBadge.textContent = 'Desconectado';
+          driveBtnLabel.textContent = 'Conectar Google Drive';
+          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+          inboxBadge.textContent = 'Conecte o Drive para enviar';
         }
-        if (!box) return;
-
-        const envLoaded = Boolean(
-          injectedEnv.VITE_SUPABASE_URL ||
-          injectedEnv.VITE_GOOGLE_CLIENT_ID ||
-          injectedEnv.__INJECTED_AT__
-        );
-        const hasToken = Boolean(googleAccessToken && Date.now() < googleTokenExpiry);
-
-        const items = [
-          {
-            title: '1. GitHub Actions (env-config.js)',
-            ok: envLoaded,
-            detail: envLoaded
-              ? 'Variáveis injetadas pelo workflow detectadas.'
-              : 'env-config.js sem variáveis. Clique em "Run workflow" na aba Actions do GitHub após cadastrar os Secrets.'
-          },
-          {
-            title: '2. Banco de Dados Supabase',
-            ok: supabaseConnected,
-            detail: supabaseConnected
-              ? 'Conectado à tabela public.scores (' + scores.length + ' registro(s)).'
-              : (lastSupabaseError || 'Não conectado. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.')
-          },
-          {
-            title: '3. Google Drive OAuth 2.0',
-            ok: hasToken,
-            detail: hasToken
-              ? 'Token OAuth 2.0 ativo para upload multipart na API v3.'
-              : (appConfig.googleClientId
-                  ? 'Client ID configurado. Clique em "Conectar Drive" para autenticar sua conta Google.'
-                  : 'VITE_GOOGLE_CLIENT_ID ausente.')
-          },
-          {
-            title: '4. Pasta /Partituras/Inbox',
-            ok: Boolean(appConfig.driveFolderId),
-            detail: appConfig.driveFolderId
-              ? 'Pasta alvo ID: ' + appConfig.driveFolderId
-              : 'ID da pasta não definido (usará a raiz do Drive).'
-          }
-        ];
-
-        box.innerHTML = items.map(function (it) {
-          const badge = it.ok
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">OK</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">ATENÇÃO</span>';
-          return (
-            '<div class="bg-parchment-50 border border-parchment-300 rounded-xl p-3 space-y-1">' +
-              '<div class="flex items-center justify-between gap-2">' +
-                '<strong class="text-wood-900">' + it.title + '</strong>' +
-                badge +
-              '</div>' +
-              '<p class="text-[11px] text-wood-700 leading-snug">' + it.detail + '</p>' +
-            '</div>'
-          );
-        }).join('');
       }
 
       function requestGoogleDriveToken() {
@@ -1113,11 +945,11 @@
             return;
           }
           if (!appConfig.googleClientId) {
-            reject(new Error('VITE_GOOGLE_CLIENT_ID não está configurado. Abra "APIs & Segredos" ou confira os Secrets no GitHub.'));
+            reject(new Error('Configuração do Google Drive ausente no ambiente.'));
             return;
           }
           if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
-            reject(new Error('A biblioteca Google Identity Services ainda não carregou. Verifique bloqueadores de anúncios/scripts.'));
+            reject(new Error('Serviço de login do Google ainda não carregou. Tente novamente em instantes.'));
             return;
           }
 
@@ -1127,14 +959,13 @@
               scope: 'https://www.googleapis.com/auth/drive',
               callback: function (resp) {
                 if (resp.error) {
-                  reject(new Error('Erro OAuth Google (' + resp.error + '): verifique se "' + window.location.origin + '" está em Origens JavaScript autorizadas no Google Cloud Console.'));
+                  reject(new Error('Não foi possível autenticar o Google Drive (' + resp.error + ').'));
                   return;
                 }
                 googleAccessToken = resp.access_token;
                 const expiresInSec = Number(resp.expires_in || 3500);
                 googleTokenExpiry = Date.now() + (expiresInSec - 60) * 1000;
-                updateDriveStatusUI();
-                renderDiagnosticReport();
+                updateSyncStatusUI();
                 resolve(googleAccessToken);
               }
             });
@@ -1186,7 +1017,7 @@
           } catch (e) {
             // ignore
           }
-          throw new Error('Falha no upload para o Google Drive: ' + errDetail);
+          throw new Error('Falha no envio ao Google Drive: ' + errDetail);
         }
 
         const data = await response.json();
@@ -1197,41 +1028,48 @@
         };
       }
 
-      async function initSupabaseConnection() {
-        const dot = document.getElementById('cloudStatusDot');
-        const label = document.getElementById('cloudStatusLabel');
-        supabaseConnected = false;
-        lastSupabaseError = '';
-
-        if (appConfig.supabaseUrl && appConfig.supabaseKey && window.supabase) {
-          try {
-            supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
-            const { data, error } = await supabaseClient
-              .from('scores')
-              .select('*')
-              .order('created_at', { ascending: false });
-
-            if (error) {
-              lastSupabaseError = 'Erro Supabase (' + (error.code || '') + '): ' + error.message;
-              showDiagnosticBanner(lastSupabaseError);
-            } else if (Array.isArray(data)) {
-              supabaseConnected = true;
-              scores = data;
-              safeSetStorage(STORAGE_KEY_SCORES, scores);
-              dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-              label.textContent = 'Supabase Conectado';
-              renderAll();
-              renderDiagnosticReport();
-              return;
-            }
-          } catch (err) {
-            lastSupabaseError = 'Exceção ao conectar ao Supabase: ' + (err.message || String(err));
-            showDiagnosticBanner(lastSupabaseError);
-          }
+      async function initSupabaseConnection(showFeedbackToast) {
+        if (!appConfig.supabaseUrl || !appConfig.supabaseKey || !window.supabase) {
+          supabaseConnected = false;
+          isSyncing = false;
+          updateSyncStatusUI();
+          return;
         }
-        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-        label.textContent = 'APIs & Segredos';
-        renderDiagnosticReport();
+
+        isSyncing = true;
+        updateSyncStatusUI();
+
+        try {
+          if (!supabaseClient) {
+            supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
+          }
+          const { data, error } = await supabaseClient
+            .from('scores')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          isSyncing = false;
+          if (!error && Array.isArray(data)) {
+            supabaseConnected = true;
+            scores = data;
+            safeSetStorage(STORAGE_KEY_SCORES, scores);
+            const now = new Date();
+            lastSyncTimeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            renderAll();
+            if (showFeedbackToast) {
+              showToast('✓ Catálogo sincronizado com a nuvem.');
+            }
+            return;
+          }
+        } catch (err) {
+          isSyncing = false;
+        }
+
+        supabaseConnected = false;
+        updateSyncStatusUI();
+        if (showFeedbackToast) {
+          showToast('Não foi possível sincronizar no momento. Usando dados locais.');
+        }
       }
 
       function parseScoreFilename(filename) {
@@ -1294,13 +1132,22 @@
 
       function renderStatsAndBadges() {
         const categorized = scores.filter(function (s) { return s.is_categorized; });
-        const inbox = scores.filter(function (s) { return !s.is_categorized; });
+        const inbox = getInboxScores();
         const favorites = categorized.filter(function (s) {
           return (s.tags || []).some(function (t) { return t.toLowerCase() === 'favoritas'; });
         });
 
         document.getElementById('badgeCategorizedCount').textContent = String(categorized.length);
         document.getElementById('badgeInboxCount').textContent = String(inbox.length);
+
+        const triageBadge = document.getElementById('badgeTriageCount');
+        if (inbox.length > 0) {
+          triageBadge.textContent = String(inbox.length);
+          triageBadge.classList.remove('hidden');
+        } else {
+          triageBadge.classList.add('hidden');
+        }
+
         document.getElementById('statTotalScores').textContent = String(scores.length);
         document.getElementById('statCategorized').textContent = String(categorized.length);
         document.getElementById('statPendingInbox').textContent = String(inbox.length);
@@ -1326,7 +1173,7 @@
       function renderLibraryView() {
         const filtered = getFilteredLibraryScores();
         document.getElementById('resultsCounterText').textContent =
-          'Mostrando ' + filtered.length + (filtered.length === 1 ? ' partitura catalogada' : ' partituras catalogadas');
+          filtered.length + (filtered.length === 1 ? ' partitura' : ' partituras');
 
         const gridEl = document.getElementById('scoreGridContainer');
         const tableWrapper = document.getElementById('scoreTableContainer');
@@ -1343,8 +1190,8 @@
         if (filtered.length === 0) {
           gridEl.innerHTML =
             '<div class="col-span-full parchment-card rounded-2xl p-8 text-center space-y-3">' +
-              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura catalogada encontrada</p>' +
-              '<p class="text-xs text-wood-600">Limpe os filtros ativos ou envie novos PDFs na aba Inbox &amp; Upload.</p>' +
+              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura encontrada</p>' +
+              '<p class="text-xs text-wood-600">Limpe os filtros de busca ou envie novos PDFs na aba Enviar PDFs.</p>' +
             '</div>';
           tableBody.innerHTML =
             '<tr><td colspan="7" class="py-8 text-center text-wood-600">Nenhuma partitura encontrada com os filtros atuais.</td></tr>';
@@ -1353,11 +1200,6 @@
 
         gridEl.innerHTML = filtered.map(function (score) {
           const isFav = (score.tags || []).includes('favoritas');
-          const hasRealPdf = isRealDriveFileId(score.drive_file_id) || Boolean(localBlobUrls[score.id]);
-          const storagePill = hasRealPdf
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">PDF no Drive</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-parchment-200 text-wood-700 border border-parchment-300">Exemplo Demo</span>';
-
           const tagsHtml = (score.tags || []).map(function (tag) {
             return '<span class="px-2 py-0.5 rounded-full text-[11px] bg-parchment-200 text-wood-800 border border-parchment-300">#' + tag + '</span>';
           }).join('');
@@ -1366,12 +1208,9 @@
             '<article class="parchment-card rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amberbrass-500 transition">' +
               '<div class="space-y-2.5">' +
                 '<div class="flex items-start justify-between gap-2">' +
-                  '<div class="flex flex-wrap items-center gap-1.5">' +
-                    '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-800 text-amberbrass-400">' +
-                      (score.instrumentation || 'Piano Solo') +
-                    '</span>' +
-                    storagePill +
-                  '</div>' +
+                  '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-800 text-amberbrass-400">' +
+                    (score.instrumentation || 'Piano Solo') +
+                  '</span>' +
                   '<div class="flex items-center gap-1.5">' +
                     '<span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ' + difficultyBadgeClass(score.difficulty) + '">' +
                       (score.difficulty || 'Intermediário') +
@@ -1388,16 +1227,16 @@
                   '</p>' +
                 '</div>' +
                 '<div class="flex flex-wrap items-center gap-2 text-xs text-wood-700 pt-1">' +
-                  '<span class="bg-parchment-200/80 px-2.5 py-1 rounded-lg border border-parchment-300">🎵 Tom: <strong>' + (score.musical_key || 'C Major') + '</strong></span>' +
+                  '<span class="bg-parchment-200/80 px-2.5 py-1 rounded-lg border border-parchment-300">🎵 ' + (score.musical_key || 'C Major') + '</span>' +
                   '<span class="bg-parchment-200/80 px-2.5 py-1 rounded-lg border border-parchment-300">🏛️ ' + (score.genre || 'Clássico') + '</span>' +
                 '</div>' +
                 '<div class="flex flex-wrap gap-1 pt-1">' + tagsHtml + '</div>' +
               '</div>' +
               '<div class="pt-3 border-t border-parchment-200 flex items-center justify-between gap-2">' +
                 '<button type="button" data-action="open-reader" data-id="' + score.id + '" class="flex-1 brass-btn py-2 px-3 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">' +
-                  '<span>📖 Ler Partitura (PDF)</span>' +
+                  '<span>📖 Abrir Partitura</span>' +
                 '</button>' +
-                '<button type="button" data-action="edit-score" data-id="' + score.id + '" class="px-3 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition" title="Editar na tela dividida">' +
+                '<button type="button" data-action="edit-score" data-id="' + score.id + '" class="px-3 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition" title="Editar informações">' +
                   '✎ Editar' +
                 '</button>' +
               '</div>' +
@@ -1416,7 +1255,7 @@
               '<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-xs border ' + difficultyBadgeClass(score.difficulty) + '">' + (score.difficulty || '-') + '</span></td>' +
               '<td class="py-3 px-4 text-xs text-wood-600">' + (score.genre || '-') + ' ' + tagsText + '</td>' +
               '<td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">' +
-                '<button type="button" data-action="open-reader" data-id="' + score.id + '" class="px-2.5 py-1 rounded-lg bg-amberbrass-500 text-parchment-50 text-xs font-semibold">Ler PDF</button>' +
+                '<button type="button" data-action="open-reader" data-id="' + score.id + '" class="px-2.5 py-1 rounded-lg bg-amberbrass-500 text-parchment-50 text-xs font-semibold">Abrir</button>' +
                 '<button type="button" data-action="edit-score" data-id="' + score.id + '" class="px-2.5 py-1 rounded-lg bg-parchment-200 text-wood-800 text-xs font-semibold border border-parchment-300">Editar</button>' +
               '</td>' +
             '</tr>'
@@ -1429,29 +1268,21 @@
         const container = document.getElementById('inboxListContainer');
         if (inbox.length === 0) {
           container.innerHTML =
-            '<div class="bg-parchment-100 border border-parchment-300 rounded-xl p-6 text-center space-y-2">' +
-              '<p class="font-editorial text-2xl font-bold text-wood-900">🎉 Fila de Entrada Limpa!</p>' +
-              '<p class="text-xs text-wood-600">Todas as partituras enviadas já foram revisadas e estão indexadas na Biblioteca Principal.</p>' +
+            '<div class="bg-parchment-100 border border-parchment-300 rounded-xl p-6 text-center space-y-1.5">' +
+              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura aguardando triagem</p>' +
+              '<p class="text-xs text-wood-600">Todas as partituras enviadas já foram revisadas e estão na Biblioteca.</p>' +
             '</div>';
           return;
         }
 
         container.innerHTML = inbox.map(function (item) {
-          const isReal = isRealDriveFileId(item.drive_file_id);
-          const pill = isReal
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ No Google Drive</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">Simulação Local</span>';
-
           return (
             '<div class="bg-parchment-50 border border-parchment-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 hover:border-amberbrass-500 transition">' +
               '<div class="flex items-center gap-3">' +
                 '<span class="w-10 h-10 rounded-xl bg-amberbrass-500/15 border border-amberbrass-500/40 flex items-center justify-center text-lg">📄</span>' +
                 '<div>' +
-                  '<div class="flex flex-wrap items-center gap-2">' +
-                    '<h4 class="text-sm font-semibold text-wood-900">' + item.title + '</h4>' +
-                    pill +
-                  '</div>' +
-                  '<p class="text-xs text-wood-600">Sugestão detectada: <strong>' + item.composer + '</strong>' +
+                  '<h4 class="text-sm font-semibold text-wood-900">' + item.title + '</h4>' +
+                  '<p class="text-xs text-wood-600">Compositor: <strong>' + item.composer + '</strong>' +
                     (item.arranger ? ' • Arranjo: ' + item.arranger : '') +
                     ' • Arquivo: <code>' + item.original_filename + '</code>' +
                   '</p>' +
@@ -1462,7 +1293,7 @@
                   '📖 Ver PDF' +
                 '</button>' +
                 '<button type="button" data-action="triage-item" data-id="' + item.id + '" class="brass-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition">' +
-                  '⚖️ Catalogar em Split-Screen' +
+                  '⚖️ Revisar e Catalogar' +
                 '</button>' +
               '</div>' +
             '</div>'
@@ -1472,64 +1303,103 @@
 
       function renderTriageView() {
         const inbox = getInboxScores();
-        const allList = inbox.length > 0 ? inbox : scores;
-        if (!state.selectedTriageId || !scores.some(function (s) { return s.id === state.selectedTriageId; })) {
-          state.selectedTriageId = allList[0] ? allList[0].id : null;
+        const emptyStateEl = document.getElementById('triageEmptyState');
+        const workspaceEl = document.getElementById('triageWorkspace');
+        const navControlsEl = document.getElementById('triageQueueNavControls');
+        const backWrapEl = document.getElementById('triageEditLibraryBackWrap');
+        const headerTitleEl = document.getElementById('triageHeaderTitle');
+        const saveBtnTextEl = document.getElementById('saveAndCategorizeBtnText');
+
+        // Verifica se está editando uma partitura já catalogada a partir do botão "Editar" da Biblioteca
+        let targetScore = null;
+        if (state.editingFromLibrary && state.selectedTriageId) {
+          targetScore = scores.find(function (s) { return s.id === state.selectedTriageId; }) || null;
+          if (!targetScore) {
+            state.editingFromLibrary = false;
+          }
         }
 
-        const dropdown = document.getElementById('triageSelectorDropdown');
-        dropdown.innerHTML = scores.map(function (s) {
-          const prefix = s.is_categorized ? '[Catalogada] ' : '[Pendente Inbox] ';
-          return '<option value="' + s.id + '"' + (s.id === state.selectedTriageId ? ' selected' : '') + '>' + prefix + s.title + ' — ' + s.composer + '</option>';
-        }).join('');
+        // Se não está editando da biblioteca, trabalha EXCLUSIVAMENTE com a fila de não-categorizadas (inbox)
+        if (!state.editingFromLibrary) {
+          if (inbox.length === 0) {
+            state.selectedTriageId = null;
+            emptyStateEl.classList.remove('hidden');
+            workspaceEl.classList.add('hidden');
+            return;
+          }
 
-        const current = scores.find(function (s) { return s.id === state.selectedTriageId; });
-        if (!current) return;
+          const existsInInbox = inbox.some(function (s) { return s.id === state.selectedTriageId; });
+          if (!state.selectedTriageId || !existsInInbox) {
+            state.selectedTriageId = inbox[0].id;
+          }
+          targetScore = inbox.find(function (s) { return s.id === state.selectedTriageId; }) || inbox[0];
+        }
 
-        const idxInInbox = inbox.findIndex(function (s) { return s.id === current.id; });
-        const posLabel = idxInInbox >= 0
-          ? 'Fila de Triagem (Inbox): item ' + (idxInInbox + 1) + ' de ' + inbox.length
-          : 'Editando partitura já catalogada na Biblioteca Principal';
-        document.getElementById('triageQueuePositionText').textContent = posLabel;
+        emptyStateEl.classList.add('hidden');
+        workspaceEl.classList.remove('hidden');
 
-        document.getElementById('triageFilenameHeader').textContent = current.original_filename || (current.title + '.pdf');
+        if (state.editingFromLibrary) {
+          headerTitleEl.textContent = 'Editar Partitura';
+          document.getElementById('triageQueuePositionText').textContent = 'Atualizando informações de partitura já catalogada';
+          navControlsEl.classList.add('hidden');
+          backWrapEl.classList.remove('hidden');
+          saveBtnTextEl.textContent = '✓ Salvar Alterações';
+        } else {
+          headerTitleEl.textContent = 'Triagem de Partituras';
+          navControlsEl.classList.remove('hidden');
+          backWrapEl.classList.add('hidden');
+          saveBtnTextEl.textContent = '✓ Salvar e Mover para Biblioteca';
+
+          const dropdown = document.getElementById('triageSelectorDropdown');
+          dropdown.innerHTML = inbox.map(function (s) {
+            return '<option value="' + s.id + '"' + (s.id === targetScore.id ? ' selected' : '') + '>' + s.title + ' — ' + s.composer + '</option>';
+          }).join('');
+
+          const idxInInbox = inbox.findIndex(function (s) { return s.id === targetScore.id; });
+          document.getElementById('triageQueuePositionText').textContent =
+            'Item ' + (idxInInbox + 1) + ' de ' + inbox.length + ' aguardando triagem';
+        }
+
+        const filename = targetScore.original_filename || (targetScore.title + '.pdf');
+        document.getElementById('triageFilenameHeader').textContent = filename;
+        document.getElementById('previewSheetFilename').textContent = filename;
+
         const statusBadge = document.getElementById('triageStatusBadge');
-        if (current.is_categorized) {
+        if (targetScore.is_categorized) {
           statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
           statusBadge.textContent = '✓ Catalogada';
         } else {
           statusBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300';
-          statusBadge.textContent = 'Pendente (Inbox)';
+          statusBadge.textContent = 'Pendente de Triagem';
         }
 
-        document.getElementById('triageScoreId').value = current.id;
-        document.getElementById('triageTitle').value = current.title || '';
-        document.getElementById('triageComposer').value = current.composer || '';
-        document.getElementById('triageArranger').value = current.arranger || '';
-        document.getElementById('triageInstrumentation').value = current.instrumentation || 'Piano Solo';
-        document.getElementById('triageMusicalKey').value = current.musical_key || 'C Major';
-        document.getElementById('triageDifficulty').value = current.difficulty || 'Intermediário';
-        document.getElementById('triageGenre').value = current.genre || 'Clássico';
-        document.getElementById('triageTags').value = (current.tags || []).join(', ');
-        document.getElementById('triageDriveFileId').value = current.drive_file_id || '';
+        document.getElementById('triageScoreId').value = targetScore.id;
+        document.getElementById('triageTitle').value = targetScore.title || '';
+        document.getElementById('triageComposer').value = targetScore.composer || '';
+        document.getElementById('triageArranger').value = targetScore.arranger || '';
+        document.getElementById('triageInstrumentation').value = targetScore.instrumentation || 'Piano Solo';
+        document.getElementById('triageMusicalKey').value = targetScore.musical_key || 'C Major';
+        document.getElementById('triageDifficulty').value = targetScore.difficulty || 'Intermediário';
+        document.getElementById('triageGenre').value = targetScore.genre || 'Clássico';
+        document.getElementById('triageTags').value = (targetScore.tags || []).join(', ');
+        document.getElementById('triageDriveFileId').value = targetScore.drive_file_id || '';
 
-        document.getElementById('previewSheetTitle').textContent = current.title || 'Sem Título';
+        document.getElementById('previewSheetTitle').textContent = targetScore.title || 'Sem Título';
         document.getElementById('previewSheetComposer').textContent =
-          (current.composer || 'Compositor') + (current.arranger ? ' • Arranjo: ' + current.arranger : '');
-        document.getElementById('previewSheetInstrumentation').textContent = current.instrumentation || 'Piano Solo';
-        document.getElementById('previewSheetKey').textContent = current.musical_key || 'C Major';
-        document.getElementById('previewSheetDifficulty').textContent = current.difficulty || 'Intermediário';
-        document.getElementById('previewSheetDriveId').textContent = current.drive_file_id || 'local-preview';
+          (targetScore.composer || 'Compositor') + (targetScore.arranger ? ' • Arranjo: ' + targetScore.arranger : '');
+        document.getElementById('previewSheetInstrumentation').textContent = targetScore.instrumentation || 'Piano Solo';
+        document.getElementById('previewSheetKey').textContent = targetScore.musical_key || 'C Major';
+        document.getElementById('previewSheetDifficulty').textContent = targetScore.difficulty || 'Intermediário';
 
         const iframe = document.getElementById('triageDriveIframe');
         const fallback = document.getElementById('triageSheetPreviewFallback');
-        const localBlob = localBlobUrls[current.id];
-        const hasRealDrive = isRealDriveFileId(current.drive_file_id);
+        const localBlob = localBlobUrls[targetScore.id];
+        const hasRealDrive = isRealDriveFileId(targetScore.drive_file_id);
 
-        if (state.useRealDriveIframe && (hasRealDrive || localBlob)) {
+        if (hasRealDrive || localBlob) {
           const targetSrc = localBlob
             ? localBlob
-            : ('https://drive.google.com/file/d/' + encodeURIComponent(current.drive_file_id) + '/preview');
+            : ('https://drive.google.com/file/d/' + encodeURIComponent(targetScore.drive_file_id) + '/preview');
           if (iframe.getAttribute('src') !== targetSrc) {
             iframe.setAttribute('src', targetSrc);
           }
@@ -1541,7 +1411,10 @@
         }
       }
 
-      function switchTab(tabName) {
+      function switchTab(tabName, keepLibraryEditMode) {
+        if (!keepLibraryEditMode) {
+          state.editingFromLibrary = false;
+        }
         state.activeTab = tabName;
         const views = {
           library: document.getElementById('viewLibrary'),
@@ -1575,7 +1448,7 @@
       }
 
       function renderAll() {
-        updateDriveStatusUI();
+        updateSyncStatusUI();
         renderStatsAndBadges();
         renderLibraryView();
         renderInboxView();
@@ -1617,18 +1490,22 @@
 
         if (supabaseClient) {
           try {
+            isSyncing = true;
+            updateSyncStatusUI();
             const { error } = await supabaseClient.from('scores').upsert(dbRecord);
+            isSyncing = false;
             if (error) {
-              lastSupabaseError = 'Erro ao gravar no Supabase (' + (error.code || '') + '): ' + error.message;
-              showDiagnosticBanner(lastSupabaseError);
-              showToast('⚠️ Salvo localmente, mas o Supabase retornou erro: ' + error.message);
+              showToast('⚠️ Salvo localmente, mas não foi possível sincronizar: ' + error.message);
+              updateSyncStatusUI();
               return false;
             }
             supabaseConnected = true;
+            lastSyncTimeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            updateSyncStatusUI();
             return true;
           } catch (err) {
-            lastSupabaseError = 'Falha de rede ao gravar no Supabase: ' + (err.message || String(err));
-            showDiagnosticBanner(lastSupabaseError);
+            isSyncing = false;
+            updateSyncStatusUI();
             return false;
           }
         }
@@ -1656,16 +1533,13 @@
         let token = '';
         if (appConfig.googleClientId) {
           try {
-            progressText.textContent = 'Solicitando autorização OAuth 2.0 do Google Drive...';
+            progressText.textContent = 'Conectando ao Google Drive...';
             token = await requestGoogleDriveToken();
           } catch (authErr) {
-            showDiagnosticBanner(authErr.message || String(authErr));
             showToast('⚠️ ' + (authErr.message || 'Falha na autenticação com o Google Drive.'));
             progressBox.classList.add('hidden');
             return;
           }
-        } else {
-          showDiagnosticBanner('VITE_GOOGLE_CLIENT_ID não encontrado. O PDF será aberto apenas em visualização local até que os Secrets sejam injetados.');
         }
 
         let uploadedCount = 0;
@@ -1690,14 +1564,13 @@
 
           if (token) {
             try {
-              progressText.textContent = 'Enviando "' + file.name + '" para o Google Drive (/Inbox)...';
+              progressText.textContent = 'Enviando "' + file.name + '" para o Google Drive...';
               const uploaded = await uploadPdfToGoogleDriveReal(file, token, appConfig.driveFolderId);
               driveFileId = uploaded.driveFileId;
               viewUrl = uploaded.viewUrl;
               downloadUrl = uploaded.downloadUrl;
             } catch (uploadErr) {
-              showDiagnosticBanner(uploadErr.message || String(uploadErr));
-              showToast('❌ Erro no upload de "' + file.name + '": ' + (uploadErr.message || String(uploadErr)));
+              showToast('❌ Erro no envio de "' + file.name + '": ' + (uploadErr.message || String(uploadErr)));
               continue;
             }
           }
@@ -1712,7 +1585,7 @@
             musical_key: 'C Major',
             difficulty: 'Intermediário',
             genre: 'Clássico',
-            tags: ['inbox'],
+            tags: [],
             drive_file_id: driveFileId,
             original_filename: file.name,
             view_url: viewUrl,
@@ -1734,59 +1607,17 @@
 
         if (lastCreatedId) {
           state.selectedTriageId = lastCreatedId;
-          state.useRealDriveIframe = true;
+          state.editingFromLibrary = false;
         }
         renderAll();
 
         if (uploadedCount > 0) {
-          if (token && supabaseConnected) {
-            showToast('✓ ' + uploadedCount + ' PDF(s) enviado(s) ao Google Drive e gravado(s) no Supabase!');
-          } else if (token) {
-            showToast('✓ ' + uploadedCount + ' PDF(s) enviado(s) ao Google Drive!');
-          } else {
-            showToast(uploadedCount + ' PDF(s) carregado(s) em modo de pré-visualização local.');
-          }
+          showToast('✓ ' + uploadedCount + ' partitura(s) enviada(s) para a fila de triagem!');
         }
 
         setTimeout(function () {
           progressBox.classList.add('hidden');
         }, 1800);
-      }
-
-      async function handleSimulateDemoBatch() {
-        const sampleFiles = [
-          'Franz Liszt - Liebestraum No. 3 (Edição Cortot).pdf',
-          'Chiquinha Gonzaga - Ó Abre Alas (Piano e Voz).pdf',
-          'Nobuo Uematsu - To Zanarkand (Final Fantasy X Piano Collections).pdf'
-        ];
-        for (let i = 0; i < sampleFiles.length; i++) {
-          const fname = sampleFiles[i];
-          const parsed = parseScoreFilename(fname);
-          const id = generateUUID();
-          const fakeDriveId = '1DrivePdf_Demo_' + id.slice(0, 6);
-          const now = new Date().toISOString();
-          await persistScoreRecord({
-            id: id,
-            title: parsed.title,
-            composer: parsed.composer,
-            arranger: parsed.arranger,
-            instrumentation: 'Piano Solo',
-            musical_key: 'C Major',
-            difficulty: 'Intermediário',
-            genre: 'Clássico',
-            tags: ['inbox'],
-            drive_file_id: fakeDriveId,
-            original_filename: fname,
-            view_url: 'https://drive.google.com/file/d/' + fakeDriveId + '/preview',
-            download_url: 'https://drive.google.com/uc?export=download&id=' + fakeDriveId,
-            is_categorized: false,
-            created_at: now,
-            updated_at: now
-          }, true);
-          state.selectedTriageId = id;
-        }
-        renderAll();
-        showToast('3 registros de demonstração adicionados à fila Inbox.');
       }
 
       function renderReaderModalContent() {
@@ -1797,16 +1628,15 @@
         const hasRealDrive = isRealDriveFileId(score.drive_file_id);
         const localBlob = localBlobUrls[score.id];
 
-        if (!state.readerForceSheetFallback && (hasRealDrive || localBlob)) {
+        if (hasRealDrive || localBlob) {
           const iframeSrc = localBlob
             ? localBlob
             : ('https://drive.google.com/file/d/' + encodeURIComponent(score.drive_file_id) + '/preview');
           body.innerHTML =
             '<div class="flex-1 w-full h-full flex flex-col space-y-2">' +
               '<iframe src="' + iframeSrc + '" title="Leitor de Partitura PDF" class="w-full flex-1 min-h-[72vh] rounded-xl border border-parchment-300 bg-white shadow-inner" allow="autoplay"></iframe>' +
-              '<div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-wood-700 px-1">' +
-                '<span>Arquivo: <code>' + score.original_filename + '</code> • Drive ID: <code>' + score.drive_file_id + '</code></span>' +
-                '<span>Visualizando diretamente do Google Drive PDF Viewer</span>' +
+              '<div class="flex items-center justify-between text-[11px] text-wood-700 px-1">' +
+                '<span>Arquivo: <strong>' + (score.original_filename || (score.title + '.pdf')) + '</strong></span>' +
               '</div>' +
             '</div>';
           return;
@@ -1825,9 +1655,6 @@
               '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄢</span><span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>𝅗𝅥</span><span>♩</span></div>' +
               '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄞</span><span>♫</span><span>♫</span><span>♩</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span></div>' +
             '</div>' +
-            '<div class="bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-xs text-wood-800 flex flex-wrap items-center justify-between gap-2">' +
-              '<span>⚠️ <strong>Ficha de Demonstração:</strong> este item possui um ID de exemplo (<code>' + score.drive_file_id + '</code>). Ao enviar seus próprios PDFs pela aba <strong>Inbox &amp; Upload</strong> com o Google Drive conectado, o leitor exibirá o PDF real automaticamente.</span>' +
-            '</div>' +
           '</div>';
       }
 
@@ -1835,7 +1662,6 @@
         const score = scores.find(function (s) { return s.id === scoreId; });
         if (!score) return;
         state.activeReaderScoreId = score.id;
-        state.readerForceSheetFallback = false;
 
         document.getElementById('readerModalTitle').textContent = score.title;
         document.getElementById('readerModalMeta').textContent =
@@ -1865,36 +1691,60 @@
         document.getElementById('readerModal').classList.remove('hidden');
       }
 
+      // Login simplificado (apenas senha)
       document.getElementById('unlockForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const typed = document.getElementById('unlockPasswordInput').value.trim();
-        const profile = document.getElementById('unlockProfile').value;
         const expected = appConfig.appPassword || 'melos2026';
         const errEl = document.getElementById('unlockErrorMsg');
 
-        if (typed === expected || typed === 'melos2026') {
-          state.currentUser = profile;
-          document.getElementById('activeUserGreeting').textContent = 'Sessão: ' + profile;
+        if (typed === expected || (!injectedEnv.VITE_APP_PASSWORD && typed === 'melos2026')) {
           document.getElementById('lockScreen').classList.add('hidden');
           errEl.classList.add('hidden');
-          safeSetStorage(STORAGE_KEY_SESSION, { unlocked: true, user: profile });
-          showToast('Bem-vindo(a) ao Melos, ' + profile + '!');
+          document.getElementById('unlockPasswordInput').value = '';
+          safeSetStorage(STORAGE_KEY_SESSION, { unlocked: true });
         } else {
-          errEl.textContent = 'Senha incorreta. Verifique a senha configurada em VITE_APP_PASSWORD.';
+          errEl.textContent = 'Senha incorreta.';
           errEl.classList.remove('hidden');
         }
       });
 
       document.getElementById('lockAppBtn').addEventListener('click', function () {
+        safeSetStorage(STORAGE_KEY_SESSION, { unlocked: false });
+        document.getElementById('syncPopover').classList.add('hidden');
         document.getElementById('lockScreen').classList.remove('hidden');
+      });
+
+      // Popover de status de sincronização
+      const syncStatusBtn = document.getElementById('syncStatusBtn');
+      const syncPopover = document.getElementById('syncPopover');
+
+      syncStatusBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        syncPopover.classList.toggle('hidden');
+      });
+
+      document.getElementById('closeSyncPopoverBtn').addEventListener('click', function () {
+        syncPopover.classList.add('hidden');
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!syncPopover.classList.contains('hidden')) {
+          if (!syncPopover.contains(e.target) && !syncStatusBtn.contains(e.target)) {
+            syncPopover.classList.add('hidden');
+          }
+        }
+      });
+
+      document.getElementById('refreshSyncNowBtn').addEventListener('click', async function () {
+        await initSupabaseConnection(true);
       });
 
       async function handleManualGoogleConnect() {
         try {
           await requestGoogleDriveToken();
-          showToast('✓ Google Drive conectado via OAuth 2.0! Pronto para enviar PDFs.');
+          showToast('✓ Google Drive conectado! Pronto para enviar PDFs.');
         } catch (err) {
-          showDiagnosticBanner(err.message || String(err));
           showToast('⚠️ ' + (err.message || String(err)));
         }
       }
@@ -1905,29 +1755,30 @@
         handleManualGoogleConnect();
       });
 
-      document.getElementById('alertOpenConfigBtn').addEventListener('click', function () {
-        document.getElementById('openConfigModalBtn').click();
-      });
-      document.getElementById('alertDismissBtn').addEventListener('click', function () {
-        document.getElementById('apiDiagnosticAlert').classList.add('hidden');
-      });
-
       document.querySelectorAll('.nav-tab-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          switchTab(btn.getAttribute('data-tab'));
+          switchTab(btn.getAttribute('data-tab'), false);
         });
-      });
-
-      document.getElementById('openQuickUploadBtn').addEventListener('click', function () {
-        switchTab('inbox');
       });
 
       document.getElementById('startTriageFromInboxBtn').addEventListener('click', function () {
         const inbox = getInboxScores();
-        if (inbox.length > 0) {
-          state.selectedTriageId = inbox[0].id;
-        }
-        switchTab('triage');
+        state.editingFromLibrary = false;
+        state.selectedTriageId = inbox[0] ? inbox[0].id : null;
+        switchTab('triage', false);
+      });
+
+      document.getElementById('emptyTriageGoLibraryBtn').addEventListener('click', function () {
+        switchTab('library', false);
+      });
+
+      document.getElementById('emptyTriageGoUploadBtn').addEventListener('click', function () {
+        switchTab('inbox', false);
+      });
+
+      document.getElementById('cancelEditBackToLibraryBtn').addEventListener('click', function () {
+        state.editingFromLibrary = false;
+        switchTab('library', false);
       });
 
       let searchDebounceTimer = null;
@@ -2002,42 +1853,16 @@
 
       document.getElementById('viewModeGridBtn').addEventListener('click', function () {
         state.viewMode = 'grid';
-        document.getElementById('viewModeGridBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
-        document.getElementById('viewModeTableBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
+        document.getElementById('viewModeGridBtn').className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
+        document.getElementById('viewModeTableBtn').className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
         renderLibraryView();
       });
 
       document.getElementById('viewModeTableBtn').addEventListener('click', function () {
         state.viewMode = 'table';
-        document.getElementById('viewModeTableBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
-        document.getElementById('viewModeGridBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
+        document.getElementById('viewModeTableBtn').className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
+        document.getElementById('viewModeGridBtn').className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-wood-700 hover:text-wood-900 transition';
         renderLibraryView();
-      });
-
-      document.getElementById('newManualScoreBtn').addEventListener('click', async function () {
-        const now = new Date().toISOString();
-        const newScore = {
-          id: generateUUID(),
-          title: 'Nova Partitura para Catalogar',
-          composer: 'Compositor',
-          arranger: '',
-          instrumentation: 'Piano Solo',
-          musical_key: 'C Major',
-          difficulty: 'Intermediário',
-          genre: 'Clássico',
-          tags: ['repertório 2026'],
-          drive_file_id: '1NovoArquivoDriveId',
-          original_filename: 'Nova_Partitura.pdf',
-          view_url: 'https://drive.google.com/file/d/1NovoArquivoDriveId/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1NovoArquivoDriveId',
-          is_categorized: false,
-          created_at: now,
-          updated_at: now
-        };
-        await persistScoreRecord(newScore, true);
-        state.selectedTriageId = newScore.id;
-        switchTab('triage');
-        showToast('Ficha criada! Cole o ID do arquivo do Google Drive ou envie o PDF pela aba Inbox.');
       });
 
       document.body.addEventListener('click', async function (e) {
@@ -2048,9 +1873,14 @@
 
         if (action === 'open-reader') {
           openReaderModal(id);
-        } else if (action === 'edit-score' || action === 'triage-item') {
+        } else if (action === 'edit-score') {
           state.selectedTriageId = id;
-          switchTab('triage');
+          state.editingFromLibrary = true;
+          switchTab('triage', true);
+        } else if (action === 'triage-item') {
+          state.selectedTriageId = id;
+          state.editingFromLibrary = false;
+          switchTab('triage', false);
         } else if (action === 'toggle-fav') {
           const score = scores.find(function (s) { return s.id === id; });
           if (!score) return;
@@ -2061,7 +1891,7 @@
             showToast('Removida das favoritas.');
           } else {
             tags.push('favoritas');
-            showToast('★ Adicionada às favoritas do casal!');
+            showToast('★ Adicionada às favoritas!');
           }
           score.tags = tags;
           score.updated_at = new Date().toISOString();
@@ -2107,23 +1937,19 @@
         }
       });
 
-      document.getElementById('simulateBatchUploadBtn').addEventListener('click', function (e) {
-        e.stopPropagation();
-        handleSimulateDemoBatch();
-      });
-
       document.getElementById('triageSelectorDropdown').addEventListener('change', function (e) {
         state.selectedTriageId = e.target.value;
+        state.editingFromLibrary = false;
         renderTriageView();
       });
 
       function stepTriageItem(direction) {
         const inbox = getInboxScores();
-        const pool = inbox.length > 0 ? inbox : scores;
-        if (pool.length === 0) return;
-        const idx = pool.findIndex(function (s) { return s.id === state.selectedTriageId; });
-        const nextIdx = idx < 0 ? 0 : (idx + direction + pool.length) % pool.length;
-        state.selectedTriageId = pool[nextIdx].id;
+        if (inbox.length === 0) return;
+        const idx = inbox.findIndex(function (s) { return s.id === state.selectedTriageId; });
+        const nextIdx = idx < 0 ? 0 : (idx + direction + inbox.length) % inbox.length;
+        state.selectedTriageId = inbox[nextIdx].id;
+        state.editingFromLibrary = false;
         renderTriageView();
       }
 
@@ -2135,16 +1961,13 @@
         stepTriageItem(1);
       });
 
-      document.getElementById('toggleTriageViewerModeBtn').addEventListener('click', function () {
-        state.useRealDriveIframe = !state.useRealDriveIframe;
-        renderTriageView();
-      });
-
       document.getElementById('triageMetadataForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const id = document.getElementById('triageScoreId').value;
         const current = scores.find(function (s) { return s.id === id; });
         if (!current) return;
+
+        const wasEditingFromLibrary = state.editingFromLibrary;
 
         const rawTags = document.getElementById('triageTags').value;
         const cleanTags = rawTags
@@ -2152,7 +1975,7 @@
           .map(function (t) { return t.trim(); })
           .filter(function (t) { return t && t.toLowerCase() !== 'inbox'; });
 
-        const driveId = document.getElementById('triageDriveFileId').value.trim() || current.drive_file_id;
+        const driveId = current.drive_file_id || document.getElementById('triageDriveFileId').value.trim();
         const updated = Object.assign({}, current, {
           title: document.getElementById('triageTitle').value.trim(),
           composer: document.getElementById('triageComposer').value.trim(),
@@ -2171,18 +1994,28 @@
 
         await persistScoreRecord(updated, false);
 
+        if (wasEditingFromLibrary) {
+          state.editingFromLibrary = false;
+          state.selectedTriageId = null;
+          showToast('✓ Informações da partitura atualizadas!');
+          switchTab('library', false);
+          return;
+        }
+
         const remainingInbox = getInboxScores();
         if (remainingInbox.length > 0) {
           state.selectedTriageId = remainingInbox[0].id;
-          showToast('✓ Partitura catalogada! Avançando para a próxima da fila (' + remainingInbox.length + ' restante(s)).');
+          showToast('✓ Partitura catalogada! Avançando para a próxima (' + remainingInbox.length + ' restante(s)).');
         } else {
-          showToast('✓ Partitura catalogada e publicada na Biblioteca Principal!');
+          state.selectedTriageId = null;
+          showToast('✓ Partitura catalogada! Fila de triagem concluída.');
         }
         renderAll();
       });
 
       document.getElementById('deleteScoreFromTriageBtn').addEventListener('click', async function () {
         const id = document.getElementById('triageScoreId').value;
+        const wasEditingFromLibrary = state.editingFromLibrary;
         scores = scores.filter(function (s) { return s.id !== id; });
         safeSetStorage(STORAGE_KEY_SCORES, scores);
         if (supabaseClient && isValidUUID(id)) {
@@ -2192,29 +2025,30 @@
             // ignore
           }
         }
-        state.selectedTriageId = scores[0] ? scores[0].id : null;
-        renderAll();
-        showToast('Registro removido do catálogo.');
+        state.editingFromLibrary = false;
+        const remainingInbox = getInboxScores();
+        state.selectedTriageId = remainingInbox[0] ? remainingInbox[0].id : null;
+        showToast('Partitura removida do acervo.');
+        if (wasEditingFromLibrary) {
+          switchTab('library', false);
+        } else {
+          renderAll();
+        }
       });
 
       document.addEventListener('keydown', function (e) {
-        if (state.activeTab === 'triage') {
+        if (state.activeTab === 'triage' && !document.getElementById('triageWorkspace').classList.contains('hidden')) {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('saveAndCategorizeBtn').click();
-          } else if (e.altKey && e.key === 'ArrowRight') {
+          } else if (!state.editingFromLibrary && e.altKey && e.key === 'ArrowRight') {
             e.preventDefault();
             stepTriageItem(1);
-          } else if (e.altKey && e.key === 'ArrowLeft') {
+          } else if (!state.editingFromLibrary && e.altKey && e.key === 'ArrowLeft') {
             e.preventDefault();
             stepTriageItem(-1);
           }
         }
-      });
-
-      document.getElementById('toggleReaderModeBtn').addEventListener('click', function () {
-        state.readerForceSheetFallback = !state.readerForceSheetFallback;
-        renderReaderModalContent();
       });
 
       document.getElementById('closeReaderModalBtn').addEventListener('click', function () {
@@ -2224,84 +2058,15 @@
       document.getElementById('editFromReaderBtn').addEventListener('click', function () {
         document.getElementById('readerModal').classList.add('hidden');
         if (state.activeReaderScoreId) {
+          const score = scores.find(function (s) { return s.id === state.activeReaderScoreId; });
           state.selectedTriageId = state.activeReaderScoreId;
-          switchTab('triage');
+          state.editingFromLibrary = Boolean(score && score.is_categorized);
+          switchTab('triage', state.editingFromLibrary);
         }
-      });
-
-      document.getElementById('openConfigModalBtn').addEventListener('click', function () {
-        document.getElementById('cfgSupabaseUrl').value = appConfig.supabaseUrl || '';
-        document.getElementById('cfgSupabaseKey').value = appConfig.supabaseKey || '';
-        document.getElementById('cfgGoogleClientId').value = appConfig.googleClientId || '';
-        document.getElementById('cfgDriveFolderId').value = appConfig.driveFolderId || DEFAULT_INBOX_FOLDER_ID;
-        document.getElementById('cfgAppPassword').value = appConfig.appPassword || 'melos2026';
-        renderDiagnosticReport();
-        document.getElementById('configModal').classList.remove('hidden');
-      });
-
-      document.getElementById('closeConfigModalBtn').addEventListener('click', function () {
-        document.getElementById('configModal').classList.add('hidden');
-      });
-
-      document.getElementById('testAllConnectionsBtn').addEventListener('click', async function () {
-        await initSupabaseConnection();
-        if (appConfig.googleClientId) {
-          try {
-            await requestGoogleDriveToken();
-            showToast('✓ Conexões com Supabase e Google Drive verificadas com sucesso!');
-          } catch (err) {
-            showToast('⚠️ ' + (err.message || String(err)));
-          }
-        } else {
-          showToast('Supabase testado. Configure VITE_GOOGLE_CLIENT_ID para testar o Google Drive.');
-        }
-        renderDiagnosticReport();
-      });
-
-      document.getElementById('clearLocalMockCacheBtn').addEventListener('click', async function () {
-        try {
-          localStorage.removeItem('melos_scores_v1');
-          localStorage.removeItem('melos_config_v1');
-          localStorage.removeItem(STORAGE_KEY_SCORES);
-          localStorage.removeItem(STORAGE_KEY_CONFIG);
-        } catch (e) {
-          // ignore
-        }
-        scores = [];
-        await initSupabaseConnection();
-        renderAll();
-        showToast('✓ Cache local e itens de demonstração limpos! Exibindo apenas dados reais do Supabase.');
-      });
-
-      document.getElementById('apiConfigForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        appConfig.supabaseUrl = document.getElementById('cfgSupabaseUrl').value.trim();
-        appConfig.supabaseKey = document.getElementById('cfgSupabaseKey').value.trim();
-        appConfig.googleClientId = document.getElementById('cfgGoogleClientId').value.trim();
-        appConfig.driveFolderId = document.getElementById('cfgDriveFolderId').value.trim() || DEFAULT_INBOX_FOLDER_ID;
-        appConfig.appPassword = document.getElementById('cfgAppPassword').value.trim() || 'melos2026';
-        safeSetStorage(STORAGE_KEY_CONFIG, appConfig);
-        await initSupabaseConnection();
-        updateDriveStatusUI();
-        renderDiagnosticReport();
-        showToast('Configurações de API e senha salvas com sucesso!');
-      });
-
-      document.getElementById('exportCatalogJsonBtn').addEventListener('click', function () {
-        const blob = new Blob([JSON.stringify(scores, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'melos-backup-partituras.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Backup JSON exportado!');
       });
 
       renderAll();
-      initSupabaseConnection();
+      initSupabaseConnection(false);
     })();
   </script>
 </body>

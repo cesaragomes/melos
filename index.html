@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="./env-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     tailwind.config = {
       theme: {
@@ -176,6 +177,10 @@
 
       <!-- Ações e Status da Nuvem -->
       <div class="flex items-center gap-2">
+        <button type="button" id="connectGoogleDriveBtn" class="px-3 py-2 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-100 border border-wood-600 transition flex items-center gap-1.5" title="Autorizar upload e leitura no Google Drive via OAuth 2.0">
+          <span id="driveStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="driveStatusLabel">Conectar Drive</span>
+        </button>
         <button type="button" id="openQuickUploadBtn" class="brass-btn px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
           <span>＋</span>
           <span class="hidden md:inline">Enviar PDFs</span>
@@ -190,6 +195,22 @@
       </div>
     </div>
   </header>
+
+  <!-- BANNER DE DIAGNÓSTICO DE API -->
+  <div id="apiDiagnosticAlert" class="hidden bg-amber-50 border-b border-amber-300 px-4 sm:px-6 py-2.5 text-xs text-wood-900">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-base">⚠️</span>
+        <span id="apiDiagnosticAlertText" class="font-medium">Verifique a conexão com o Google Drive ou Supabase.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="alertOpenConfigBtn" class="px-2.5 py-1 rounded-lg bg-wood-800 text-parchment-50 font-semibold hover:bg-wood-700 transition">
+          Abrir Diagnóstico
+        </button>
+        <button type="button" id="alertDismissBtn" class="px-2 py-1 text-wood-600 hover:text-wood-900">✕</button>
+      </div>
+    </div>
+  </div>
 
   <!-- FAIXA HERO EDITORIAL (EXIBIDA NA BIBLIOTECA PRINCIPAL) -->
   <section id="heroBannerSection" class="relative border-b border-parchment-300 overflow-hidden">
@@ -391,7 +412,12 @@
         <!-- Zona de Bulk Upload (Arrastar e Soltar múltiplos PDFs) -->
         <div class="lg:col-span-7 parchment-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
           <div>
-            <span class="text-xs font-semibold uppercase tracking-widest text-amberbrass-700">Fluxo de Ingestão Incremental</span>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-semibold uppercase tracking-widest text-amberbrass-700">Fluxo Real Google Drive API v3 + Supabase</span>
+              <span id="inboxAuthStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                Google Drive: Aguardando Login OAuth
+              </span>
+            </div>
             <h2 class="font-editorial text-3xl font-bold text-wood-900 mt-1">Upload em Lote para o Google Drive (/Inbox)</h2>
             <p class="text-xs sm:text-sm text-wood-700 mt-1 leading-relaxed">
               Selecione múltiplos arquivos PDF ou arraste uma pasta inteira. O Melos extrai automaticamente sugestões de <strong>Compositor - Obra (Arranjador).pdf</strong>, envia os PDFs para a pasta <code class="bg-parchment-200 px-1.5 py-0.5 rounded">/Partituras/Inbox</code> no Google Drive e registra tudo na fila de triagem.
@@ -412,7 +438,10 @@
             <input id="bulkPdfInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
             <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
               <button type="button" id="selectPdfFilesBtn" class="brass-btn px-4 py-2 rounded-xl text-xs font-semibold transition">
-                Selecionar Arquivos PDF
+                📤 Selecionar e Enviar PDFs ao Google Drive
+              </button>
+              <button type="button" id="inboxConnectDriveBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-wood-800 hover:bg-wood-700 text-parchment-50 transition">
+                🔗 Autorizar Google Drive Agora
               </button>
               <button type="button" id="simulateBatchUploadBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">
                 ✨ Simular Lote de 3 PDFs de Teste
@@ -708,8 +737,14 @@
           <p id="readerModalMeta" class="text-xs text-parchment-200">Compositor • Tonalidade • Formação</p>
         </div>
         <div class="flex items-center gap-2">
+          <button type="button" id="toggleReaderModeBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-amberbrass-400 border border-wood-600 transition">
+            Alternar PDF / Ficha
+          </button>
+          <a id="readerOpenDriveViewLink" href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-parchment-100 border border-wood-600 transition">
+            ↗ Abrir no Drive
+          </a>
           <a id="readerDownloadLink" href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amberbrass-500 hover:bg-amberbrass-600 text-parchment-50 transition">
-            ⬇ Abrir / Baixar PDF no Drive
+            ⬇ Baixar PDF
           </a>
           <button type="button" id="editFromReaderBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-wood-700 hover:bg-wood-600 text-parchment-100 border border-wood-600 transition">
             ✎ Editar Metadados
@@ -736,8 +771,25 @@
       </div>
 
       <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
-        <div class="bg-parchment-200/80 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-800 leading-relaxed">
-          No <strong>GitHub Pages</strong>, essas variáveis são injetadas automaticamente pelo arquivo <code class="bg-parchment-50 px-1 py-0.5 rounded">.github/workflows/deploy.yml</code> a partir dos seus <strong>GitHub Actions Secrets</strong>. Você também pode colá-las abaixo para testar a conexão em tempo real agora mesmo.
+        <div class="bg-parchment-200/90 border border-parchment-300 rounded-xl p-4 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h4 class="font-semibold text-wood-900 flex items-center gap-1.5">
+              <span>🩺</span> Diagnóstico em Tempo Real (GitHub Secrets, Supabase &amp; Google Drive)
+            </h4>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" id="testAllConnectionsBtn" class="px-3 py-1 rounded-lg bg-wood-800 hover:bg-wood-700 text-parchment-50 text-xs font-semibold transition">
+                🔄 Testar Supabase &amp; Drive
+              </button>
+              <button type="button" id="clearLocalMockCacheBtn" class="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 text-xs font-semibold transition">
+                🧹 Limpar Mocks / Cache Local
+              </button>
+            </div>
+          </div>
+          <div id="diagnosticReportBox" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
+          <div class="bg-parchment-50 border border-parchment-300 rounded-lg p-2.5 text-[11px] text-wood-700 space-y-1">
+            <p><strong>Origem JavaScript Atual (deve estar autorizada no Google Cloud Console &gt; Credenciais OAuth 2.0):</strong></p>
+            <code id="currentOriginDisplay" class="block bg-parchment-200 px-2 py-1 rounded font-mono text-wood-900 select-all">https://seu-usuario.github.io</code>
+          </div>
         </div>
 
         <form id="apiConfigForm" class="space-y-3">
@@ -797,14 +849,25 @@
     </div>
   </footer>
 
-  <!-- LÓGICA DA APLICAÇÃO -->
+    <!-- LÓGICA DA APLICAÇÃO -->
   <script>
     (function () {
-      // Variáveis injetáveis pelo GitHub Actions Secrets (via window.__MELOS_ENV__) ou LocalStorage
       const injectedEnv = window.__MELOS_ENV__ || {};
-      const STORAGE_KEY_SCORES = 'melos_scores_v1';
-      const STORAGE_KEY_CONFIG = 'melos_config_v1';
-      const STORAGE_KEY_SESSION = 'melos_unlocked_v1';
+      const STORAGE_KEY_SCORES = 'melos_scores_v2';
+      const STORAGE_KEY_CONFIG = 'melos_config_v2';
+      const STORAGE_KEY_SESSION = 'melos_unlocked_v2';
+      const DEFAULT_INBOX_FOLDER_ID = '14W2oq5b2sYOQtd6z363t72RJcNYoZCpN';
+
+      const MOCK_DRIVE_IDS = new Set([
+        '1DebussyClairDeLuneDriveId001',
+        '1ChopinNocturneOp9No2DriveId002',
+        '1JobimAguasDeMarcoDueto003',
+        '1VillaLobosBachianas5DriveId004',
+        '1HisaishiMerryGoRoundDriveId005',
+        '1NazarethOdeonInboxDriveId006',
+        '1BachPreludeBWV846Inbox007',
+        '1NovoArquivoDriveId'
+      ]);
 
       const INITIAL_SCORES = [
         {
@@ -860,80 +923,31 @@
           is_categorized: true,
           created_at: '2026-10-26T16:40:00Z',
           updated_at: '2026-10-29T20:05:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000004',
-          title: 'Bachianas Brasileiras Nº 5 — Ária (Cantilena)',
-          composer: 'Heitor Villa-Lobos',
-          arranger: 'Transcrição Voz e Piano',
-          instrumentation: 'Voz e Piano',
-          musical_key: 'A minor',
-          difficulty: 'Avançado',
-          genre: 'Clássico',
-          tags: ['dueto casal', 'recital'],
-          drive_file_id: '1VillaLobosBachianas5DriveId004',
-          original_filename: 'Heitor Villa-Lobos - Bachianas Brasileiras No 5 (Voz e Piano).pdf',
-          view_url: 'https://drive.google.com/file/d/1VillaLobosBachianas5DriveId004/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1VillaLobosBachianas5DriveId004',
-          is_categorized: true,
-          created_at: '2026-10-25T19:12:00Z',
-          updated_at: '2026-10-25T19:30:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000005',
-          title: 'Merry-Go-Round of Life (Howl’s Moving Castle)',
-          composer: 'Joe Hisaishi',
-          arranger: 'Arranjo Violino e Piano',
-          instrumentation: 'Violino e Piano',
-          musical_key: 'G minor',
-          difficulty: 'Intermediário',
-          genre: 'Trilha Sonora / Videogames',
-          tags: ['favoritas', 'dueto casal', 'repertório 2026'],
-          drive_file_id: '1HisaishiMerryGoRoundDriveId005',
-          original_filename: 'Joe Hisaishi - Merry-Go-Round of Life (Violino e Piano).pdf',
-          view_url: 'https://drive.google.com/file/d/1HisaishiMerryGoRoundDriveId005/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1HisaishiMerryGoRoundDriveId005',
-          is_categorized: true,
-          created_at: '2026-10-24T10:00:00Z',
-          updated_at: '2026-10-24T10:25:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000006',
-          title: 'Odeon — Tango Brasileiro',
-          composer: 'Ernesto Nazareth',
-          arranger: 'Manuscrito Digitalizado',
-          instrumentation: 'Piano Solo',
-          musical_key: 'C# minor',
-          difficulty: 'Avançado',
-          genre: 'Choro',
-          tags: ['estudo'],
-          drive_file_id: '1NazarethOdeonInboxDriveId006',
-          original_filename: 'Ernesto Nazareth - Odeon (Manuscrito Digitalizado).pdf',
-          view_url: 'https://drive.google.com/file/d/1NazarethOdeonInboxDriveId006/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1NazarethOdeonInboxDriveId006',
-          is_categorized: false,
-          created_at: '2026-10-30T14:00:00Z',
-          updated_at: '2026-10-30T14:00:00Z'
-        },
-        {
-          id: 'c1a80101-1111-4222-8333-000000000007',
-          title: 'Prelúdio em Dó Maior BWV 846 (Cravo Bem Temperado)',
-          composer: 'Johann Sebastian Bach',
-          arranger: 'Carl Czerny',
-          instrumentation: 'Piano Solo',
-          musical_key: 'C Major',
-          difficulty: 'Iniciante',
-          genre: 'Barroco',
-          tags: ['estudo'],
-          drive_file_id: '1BachPreludeBWV846Inbox007',
-          original_filename: 'Johann Sebastian Bach - Prelúdio BWV 846 (Carl Czerny).pdf',
-          view_url: 'https://drive.google.com/file/d/1BachPreludeBWV846Inbox007/preview',
-          download_url: 'https://drive.google.com/uc?export=download&id=1BachPreludeBWV846Inbox007',
-          is_categorized: false,
-          created_at: '2026-10-30T15:10:00Z',
-          updated_at: '2026-10-30T15:10:00Z'
         }
       ];
+
+      function generateUUID() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          const r = (Math.random() * 16) | 0;
+          const v = c === 'x' ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      }
+
+      function isValidUUID(str) {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(str || ''));
+      }
+
+      function isRealDriveFileId(driveId) {
+        if (!driveId) return false;
+        const s = String(driveId).trim();
+        if (MOCK_DRIVE_IDS.has(s)) return false;
+        if (s.startsWith('1DrivePdf_') || s.startsWith('local-')) return false;
+        return s.length >= 15;
+      }
 
       function safeGetStorage(key, fallback) {
         try {
@@ -948,20 +962,27 @@
         try {
           localStorage.setItem(key, JSON.stringify(value));
         } catch (err) {
-          // ignore storage quota errors in sandbox
+          // ignore
         }
       }
 
-      const appConfig = safeGetStorage(STORAGE_KEY_CONFIG, {
-        supabaseUrl: injectedEnv.VITE_SUPABASE_URL || '',
-        supabaseKey: injectedEnv.VITE_SUPABASE_ANON_KEY || '',
-        googleClientId: injectedEnv.VITE_GOOGLE_CLIENT_ID || '',
-        driveFolderId: injectedEnv.VITE_GOOGLE_DRIVE_FOLDER_ID || '',
-        appPassword: injectedEnv.VITE_APP_PASSWORD || 'melos2026'
-      });
+      // Sempre prioriza valores não-vazios injetados pelo GitHub Actions (window.__MELOS_ENV__)
+      const storedCfg = safeGetStorage(STORAGE_KEY_CONFIG, {});
+      const appConfig = {
+        supabaseUrl: (injectedEnv.VITE_SUPABASE_URL || storedCfg.supabaseUrl || '').trim(),
+        supabaseKey: (injectedEnv.VITE_SUPABASE_ANON_KEY || storedCfg.supabaseKey || '').trim(),
+        googleClientId: (injectedEnv.VITE_GOOGLE_CLIENT_ID || storedCfg.googleClientId || '').trim(),
+        driveFolderId: (injectedEnv.VITE_GOOGLE_DRIVE_FOLDER_ID || storedCfg.driveFolderId || DEFAULT_INBOX_FOLDER_ID).trim(),
+        appPassword: (injectedEnv.VITE_APP_PASSWORD || storedCfg.appPassword || 'melos2026').trim()
+      };
 
+      const localBlobUrls = {};
       let scores = safeGetStorage(STORAGE_KEY_SCORES, INITIAL_SCORES);
       let supabaseClient = null;
+      let supabaseConnected = false;
+      let lastSupabaseError = '';
+      let googleAccessToken = '';
+      let googleTokenExpiry = 0;
 
       let state = {
         activeTab: 'library',
@@ -973,7 +994,8 @@
         filterGenre: '',
         activeTagChip: '',
         selectedTriageId: null,
-        useRealDriveIframe: false,
+        useRealDriveIframe: true,
+        readerForceSheetFallback: false,
         activeReaderScoreId: null,
         currentUser: 'César'
       };
@@ -986,13 +1008,201 @@
         if (window.__melosToastTimer) clearTimeout(window.__melosToastTimer);
         window.__melosToastTimer = setTimeout(function () {
           toast.classList.add('hidden');
-        }, 3400);
+        }, 4200);
       }
 
-      // Inicializar Supabase se configurado
+      function showDiagnosticBanner(message) {
+        const banner = document.getElementById('apiDiagnosticAlert');
+        const text = document.getElementById('apiDiagnosticAlertText');
+        text.textContent = message;
+        banner.classList.remove('hidden');
+      }
+
+      function updateDriveStatusUI() {
+        const dot = document.getElementById('driveStatusDot');
+        const label = document.getElementById('driveStatusLabel');
+        const inboxBadge = document.getElementById('inboxAuthStatusBadge');
+        const hasValidToken = Boolean(googleAccessToken && Date.now() < googleTokenExpiry);
+
+        if (hasValidToken) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          label.textContent = 'Drive Conectado';
+          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          inboxBadge.textContent = '✓ Google Drive OAuth Ativo';
+        } else if (appConfig.googleClientId) {
+          dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+          label.textContent = 'Autorizar Drive';
+          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+          inboxBadge.textContent = 'Google Drive: Clique para Autorizar OAuth';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+          label.textContent = 'Sem Client ID';
+          inboxBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-300';
+          inboxBadge.textContent = 'Configure VITE_GOOGLE_CLIENT_ID';
+        }
+      }
+
+      function renderDiagnosticReport() {
+        const box = document.getElementById('diagnosticReportBox');
+        const originEl = document.getElementById('currentOriginDisplay');
+        if (originEl) {
+          originEl.textContent = window.location.origin || window.location.href;
+        }
+        if (!box) return;
+
+        const envLoaded = Boolean(
+          injectedEnv.VITE_SUPABASE_URL ||
+          injectedEnv.VITE_GOOGLE_CLIENT_ID ||
+          injectedEnv.__INJECTED_AT__
+        );
+        const hasToken = Boolean(googleAccessToken && Date.now() < googleTokenExpiry);
+
+        const items = [
+          {
+            title: '1. GitHub Actions (env-config.js)',
+            ok: envLoaded,
+            detail: envLoaded
+              ? 'Variáveis injetadas pelo workflow detectadas.'
+              : 'env-config.js sem variáveis. Clique em "Run workflow" na aba Actions do GitHub após cadastrar os Secrets.'
+          },
+          {
+            title: '2. Banco de Dados Supabase',
+            ok: supabaseConnected,
+            detail: supabaseConnected
+              ? 'Conectado à tabela public.scores (' + scores.length + ' registro(s)).'
+              : (lastSupabaseError || 'Não conectado. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.')
+          },
+          {
+            title: '3. Google Drive OAuth 2.0',
+            ok: hasToken,
+            detail: hasToken
+              ? 'Token OAuth 2.0 ativo para upload multipart na API v3.'
+              : (appConfig.googleClientId
+                  ? 'Client ID configurado. Clique em "Conectar Drive" para autenticar sua conta Google.'
+                  : 'VITE_GOOGLE_CLIENT_ID ausente.')
+          },
+          {
+            title: '4. Pasta /Partituras/Inbox',
+            ok: Boolean(appConfig.driveFolderId),
+            detail: appConfig.driveFolderId
+              ? 'Pasta alvo ID: ' + appConfig.driveFolderId
+              : 'ID da pasta não definido (usará a raiz do Drive).'
+          }
+        ];
+
+        box.innerHTML = items.map(function (it) {
+          const badge = it.ok
+            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">OK</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">ATENÇÃO</span>';
+          return (
+            '<div class="bg-parchment-50 border border-parchment-300 rounded-xl p-3 space-y-1">' +
+              '<div class="flex items-center justify-between gap-2">' +
+                '<strong class="text-wood-900">' + it.title + '</strong>' +
+                badge +
+              '</div>' +
+              '<p class="text-[11px] text-wood-700 leading-snug">' + it.detail + '</p>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      function requestGoogleDriveToken() {
+        return new Promise(function (resolve, reject) {
+          if (googleAccessToken && Date.now() < googleTokenExpiry) {
+            resolve(googleAccessToken);
+            return;
+          }
+          if (!appConfig.googleClientId) {
+            reject(new Error('VITE_GOOGLE_CLIENT_ID não está configurado. Abra "APIs & Segredos" ou confira os Secrets no GitHub.'));
+            return;
+          }
+          if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+            reject(new Error('A biblioteca Google Identity Services ainda não carregou. Verifique bloqueadores de anúncios/scripts.'));
+            return;
+          }
+
+          try {
+            const tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: appConfig.googleClientId,
+              scope: 'https://www.googleapis.com/auth/drive',
+              callback: function (resp) {
+                if (resp.error) {
+                  reject(new Error('Erro OAuth Google (' + resp.error + '): verifique se "' + window.location.origin + '" está em Origens JavaScript autorizadas no Google Cloud Console.'));
+                  return;
+                }
+                googleAccessToken = resp.access_token;
+                const expiresInSec = Number(resp.expires_in || 3500);
+                googleTokenExpiry = Date.now() + (expiresInSec - 60) * 1000;
+                updateDriveStatusUI();
+                renderDiagnosticReport();
+                resolve(googleAccessToken);
+              }
+            });
+            tokenClient.requestAccessToken({ prompt: '' });
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+
+      async function uploadPdfToGoogleDriveReal(file, token, folderId) {
+        async function sendMultipart(targetFolderId) {
+          const metadata = {
+            name: file.name,
+            mimeType: 'application/pdf'
+          };
+          if (targetFolderId) {
+            metadata.parents = [targetFolderId];
+          }
+
+          const form = new FormData();
+          form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+          form.append('file', file);
+
+          return fetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink',
+            {
+              method: 'POST',
+              headers: {
+                Authorization: 'Bearer ' + token
+              },
+              body: form
+            }
+          );
+        }
+
+        let response = await sendMultipart(folderId);
+        if (response.status === 404 && folderId) {
+          response = await sendMultipart('');
+        }
+
+        if (!response.ok) {
+          let errDetail = response.status + ' ' + response.statusText;
+          try {
+            const errJson = await response.json();
+            if (errJson && errJson.error && errJson.error.message) {
+              errDetail = errJson.error.message;
+            }
+          } catch (e) {
+            // ignore
+          }
+          throw new Error('Falha no upload para o Google Drive: ' + errDetail);
+        }
+
+        const data = await response.json();
+        return {
+          driveFileId: data.id,
+          viewUrl: 'https://drive.google.com/file/d/' + data.id + '/preview',
+          downloadUrl: 'https://drive.google.com/uc?export=download&id=' + data.id
+        };
+      }
+
       async function initSupabaseConnection() {
         const dot = document.getElementById('cloudStatusDot');
         const label = document.getElementById('cloudStatusLabel');
+        supabaseConnected = false;
+        lastSupabaseError = '';
+
         if (appConfig.supabaseUrl && appConfig.supabaseKey && window.supabase) {
           try {
             supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
@@ -1000,24 +1210,30 @@
               .from('scores')
               .select('*')
               .order('created_at', { ascending: false });
-            if (!error && Array.isArray(data)) {
+
+            if (error) {
+              lastSupabaseError = 'Erro Supabase (' + (error.code || '') + '): ' + error.message;
+              showDiagnosticBanner(lastSupabaseError);
+            } else if (Array.isArray(data)) {
+              supabaseConnected = true;
               scores = data;
               safeSetStorage(STORAGE_KEY_SCORES, scores);
               dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
               label.textContent = 'Supabase Conectado';
               renderAll();
+              renderDiagnosticReport();
               return;
             }
           } catch (err) {
-            // fallback to local storage
+            lastSupabaseError = 'Exceção ao conectar ao Supabase: ' + (err.message || String(err));
+            showDiagnosticBanner(lastSupabaseError);
           }
         }
         dot.className = 'w-2 h-2 rounded-full bg-amber-400';
         label.textContent = 'APIs & Segredos';
+        renderDiagnosticReport();
       }
 
-      // Parser estruturado de nomes de arquivos (Etapa 4 da Especificação):
-      // Ex.: "Compositor - Obra (Arranjador).pdf"
       function parseScoreFilename(filename) {
         const clean = filename.replace(/\.pdf$/i, '').trim();
         let composer = 'Compositor a definir';
@@ -1127,8 +1343,8 @@
         if (filtered.length === 0) {
           gridEl.innerHTML =
             '<div class="col-span-full parchment-card rounded-2xl p-8 text-center space-y-3">' +
-              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura encontrada para estes filtros</p>' +
-              '<p class="text-xs text-wood-600">Experimente limpar os filtros ou envie novos PDFs na aba Inbox & Upload.</p>' +
+              '<p class="font-editorial text-2xl font-bold text-wood-900">Nenhuma partitura catalogada encontrada</p>' +
+              '<p class="text-xs text-wood-600">Limpe os filtros ativos ou envie novos PDFs na aba Inbox &amp; Upload.</p>' +
             '</div>';
           tableBody.innerHTML =
             '<tr><td colspan="7" class="py-8 text-center text-wood-600">Nenhuma partitura encontrada com os filtros atuais.</td></tr>';
@@ -1137,6 +1353,11 @@
 
         gridEl.innerHTML = filtered.map(function (score) {
           const isFav = (score.tags || []).includes('favoritas');
+          const hasRealPdf = isRealDriveFileId(score.drive_file_id) || Boolean(localBlobUrls[score.id]);
+          const storagePill = hasRealPdf
+            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">PDF no Drive</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-parchment-200 text-wood-700 border border-parchment-300">Exemplo Demo</span>';
+
           const tagsHtml = (score.tags || []).map(function (tag) {
             return '<span class="px-2 py-0.5 rounded-full text-[11px] bg-parchment-200 text-wood-800 border border-parchment-300">#' + tag + '</span>';
           }).join('');
@@ -1145,9 +1366,12 @@
             '<article class="parchment-card rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amberbrass-500 transition">' +
               '<div class="space-y-2.5">' +
                 '<div class="flex items-start justify-between gap-2">' +
-                  '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-800 text-amberbrass-400">' +
-                    (score.instrumentation || 'Piano Solo') +
-                  '</span>' +
+                  '<div class="flex flex-wrap items-center gap-1.5">' +
+                    '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-wood-800 text-amberbrass-400">' +
+                      (score.instrumentation || 'Piano Solo') +
+                    '</span>' +
+                    storagePill +
+                  '</div>' +
                   '<div class="flex items-center gap-1.5">' +
                     '<span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ' + difficultyBadgeClass(score.difficulty) + '">' +
                       (score.difficulty || 'Intermediário') +
@@ -1213,12 +1437,20 @@
         }
 
         container.innerHTML = inbox.map(function (item) {
+          const isReal = isRealDriveFileId(item.drive_file_id);
+          const pill = isReal
+            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ No Google Drive</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">Simulação Local</span>';
+
           return (
             '<div class="bg-parchment-50 border border-parchment-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 hover:border-amberbrass-500 transition">' +
               '<div class="flex items-center gap-3">' +
                 '<span class="w-10 h-10 rounded-xl bg-amberbrass-500/15 border border-amberbrass-500/40 flex items-center justify-center text-lg">📄</span>' +
                 '<div>' +
-                  '<h4 class="text-sm font-semibold text-wood-900">' + item.title + '</h4>' +
+                  '<div class="flex flex-wrap items-center gap-2">' +
+                    '<h4 class="text-sm font-semibold text-wood-900">' + item.title + '</h4>' +
+                    pill +
+                  '</div>' +
                   '<p class="text-xs text-wood-600">Sugestão detectada: <strong>' + item.composer + '</strong>' +
                     (item.arranger ? ' • Arranjo: ' + item.arranger : '') +
                     ' • Arquivo: <code>' + item.original_filename + '</code>' +
@@ -1226,6 +1458,9 @@
                 '</div>' +
               '</div>' +
               '<div class="flex items-center gap-2">' +
+                '<button type="button" data-action="open-reader" data-id="' + item.id + '" class="px-3 py-2 rounded-xl text-xs font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">' +
+                  '📖 Ver PDF' +
+                '</button>' +
                 '<button type="button" data-action="triage-item" data-id="' + item.id + '" class="brass-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition">' +
                   '⚖️ Catalogar em Split-Screen' +
                 '</button>' +
@@ -1267,7 +1502,6 @@
           statusBadge.textContent = 'Pendente (Inbox)';
         }
 
-        // Preencher formulário
         document.getElementById('triageScoreId').value = current.id;
         document.getElementById('triageTitle').value = current.title || '';
         document.getElementById('triageComposer').value = current.composer || '';
@@ -1279,7 +1513,6 @@
         document.getElementById('triageTags').value = (current.tags || []).join(', ');
         document.getElementById('triageDriveFileId').value = current.drive_file_id || '';
 
-        // Atualizar folha de partitura / iframe
         document.getElementById('previewSheetTitle').textContent = current.title || 'Sem Título';
         document.getElementById('previewSheetComposer').textContent =
           (current.composer || 'Compositor') + (current.arranger ? ' • Arranjo: ' + current.arranger : '');
@@ -1290,8 +1523,16 @@
 
         const iframe = document.getElementById('triageDriveIframe');
         const fallback = document.getElementById('triageSheetPreviewFallback');
-        if (state.useRealDriveIframe && current.drive_file_id) {
-          iframe.src = 'https://drive.google.com/file/d/' + encodeURIComponent(current.drive_file_id) + '/preview';
+        const localBlob = localBlobUrls[current.id];
+        const hasRealDrive = isRealDriveFileId(current.drive_file_id);
+
+        if (state.useRealDriveIframe && (hasRealDrive || localBlob)) {
+          const targetSrc = localBlob
+            ? localBlob
+            : ('https://drive.google.com/file/d/' + encodeURIComponent(current.drive_file_id) + '/preview');
+          if (iframe.getAttribute('src') !== targetSrc) {
+            iframe.setAttribute('src', targetSrc);
+          }
           iframe.classList.remove('hidden');
           fallback.classList.add('hidden');
         } else {
@@ -1334,6 +1575,7 @@
       }
 
       function renderAll() {
+        updateDriveStatusUI();
         renderStatsAndBadges();
         renderLibraryView();
         renderInboxView();
@@ -1341,25 +1583,59 @@
       }
 
       async function persistScoreRecord(record, isNew) {
+        if (!isValidUUID(record.id)) {
+          record.id = generateUUID();
+        }
+
+        const dbRecord = {
+          id: record.id,
+          title: record.title || 'Sem Título',
+          composer: record.composer || 'Compositor a definir',
+          arranger: record.arranger || null,
+          instrumentation: record.instrumentation || 'Piano Solo',
+          musical_key: record.musical_key || 'C Major',
+          difficulty: record.difficulty || 'Intermediário',
+          genre: record.genre || 'Clássico',
+          tags: Array.isArray(record.tags) ? record.tags : [],
+          drive_file_id: record.drive_file_id || 'local-file',
+          original_filename: record.original_filename || (record.title + '.pdf'),
+          view_url: record.view_url || ('https://drive.google.com/file/d/' + record.drive_file_id + '/preview'),
+          download_url: record.download_url || ('https://drive.google.com/uc?export=download&id=' + record.drive_file_id),
+          is_categorized: Boolean(record.is_categorized),
+          created_at: record.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
         if (isNew) {
-          scores.unshift(record);
+          scores.unshift(dbRecord);
         } else {
           scores = scores.map(function (s) {
-            return s.id === record.id ? record : s;
+            return s.id === dbRecord.id ? dbRecord : s;
           });
         }
         safeSetStorage(STORAGE_KEY_SCORES, scores);
 
         if (supabaseClient) {
           try {
-            await supabaseClient.from('scores').upsert(record);
+            const { error } = await supabaseClient.from('scores').upsert(dbRecord);
+            if (error) {
+              lastSupabaseError = 'Erro ao gravar no Supabase (' + (error.code || '') + '): ' + error.message;
+              showDiagnosticBanner(lastSupabaseError);
+              showToast('⚠️ Salvo localmente, mas o Supabase retornou erro: ' + error.message);
+              return false;
+            }
+            supabaseConnected = true;
+            return true;
           } catch (err) {
-            // fallback local mantido
+            lastSupabaseError = 'Falha de rede ao gravar no Supabase: ' + (err.message || String(err));
+            showDiagnosticBanner(lastSupabaseError);
+            return false;
           }
         }
+        return false;
       }
 
-      function handleFilesSelected(fileList) {
+      async function handleRealFilesSelected(fileList) {
         const files = Array.from(fileList || []).filter(function (f) {
           return f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf';
         });
@@ -1374,65 +1650,168 @@
         const progressBar = document.getElementById('uploadProgressBar');
 
         progressBox.classList.remove('hidden');
-        let processed = 0;
+        progressBar.style.width = '5%';
+        progressPercent.textContent = '0%';
 
-        files.forEach(function (file, idx) {
-          setTimeout(function () {
-            const parsed = parseScoreFilename(file.name);
-            const fakeDriveId = '1DrivePdf_' + Math.random().toString(36).substring(2, 11);
-            const now = new Date().toISOString();
-            const newScore = {
-              id: 'score-' + Date.now() + '-' + idx,
-              title: parsed.title,
-              composer: parsed.composer,
-              arranger: parsed.arranger,
-              instrumentation: 'Piano Solo',
-              musical_key: 'C Major',
-              difficulty: 'Intermediário',
-              genre: 'Clássico',
-              tags: ['inbox'],
-              drive_file_id: fakeDriveId,
-              original_filename: file.name,
-              view_url: 'https://drive.google.com/file/d/' + fakeDriveId + '/preview',
-              download_url: 'https://drive.google.com/uc?export=download&id=' + fakeDriveId,
-              is_categorized: false,
-              created_at: now,
-              updated_at: now
-            };
-            persistScoreRecord(newScore, true);
-            processed++;
-            const pct = Math.round((processed / files.length) * 100);
-            progressText.textContent = 'Enviado para /Partituras/Inbox: ' + file.name;
-            progressPercent.textContent = pct + '%';
-            progressBar.style.width = pct + '%';
+        let token = '';
+        if (appConfig.googleClientId) {
+          try {
+            progressText.textContent = 'Solicitando autorização OAuth 2.0 do Google Drive...';
+            token = await requestGoogleDriveToken();
+          } catch (authErr) {
+            showDiagnosticBanner(authErr.message || String(authErr));
+            showToast('⚠️ ' + (authErr.message || 'Falha na autenticação com o Google Drive.'));
+            progressBox.classList.add('hidden');
+            return;
+          }
+        } else {
+          showDiagnosticBanner('VITE_GOOGLE_CLIENT_ID não encontrado. O PDF será aberto apenas em visualização local até que os Secrets sejam injetados.');
+        }
 
-            if (processed === files.length) {
-              state.selectedTriageId = newScore.id;
-              renderAll();
-              showToast(files.length + ' PDF(s) adicionados à fila de Não-Categorizadas!');
-              setTimeout(function () {
-                progressBox.classList.add('hidden');
-              }, 1500);
+        let uploadedCount = 0;
+        let lastCreatedId = null;
+
+        for (let idx = 0; idx < files.length; idx++) {
+          const file = files[idx];
+          const parsed = parseScoreFilename(file.name);
+          const scoreUuid = generateUUID();
+
+          if (typeof File !== 'undefined' && file instanceof Blob) {
+            try {
+              localBlobUrls[scoreUuid] = URL.createObjectURL(file);
+            } catch (e) {
+              // ignore
             }
-          }, (idx + 1) * 280);
-        });
+          }
+
+          let driveFileId = 'local-preview-' + scoreUuid.slice(0, 8);
+          let viewUrl = 'https://drive.google.com/file/d/' + driveFileId + '/preview';
+          let downloadUrl = 'https://drive.google.com/uc?export=download&id=' + driveFileId;
+
+          if (token) {
+            try {
+              progressText.textContent = 'Enviando "' + file.name + '" para o Google Drive (/Inbox)...';
+              const uploaded = await uploadPdfToGoogleDriveReal(file, token, appConfig.driveFolderId);
+              driveFileId = uploaded.driveFileId;
+              viewUrl = uploaded.viewUrl;
+              downloadUrl = uploaded.downloadUrl;
+            } catch (uploadErr) {
+              showDiagnosticBanner(uploadErr.message || String(uploadErr));
+              showToast('❌ Erro no upload de "' + file.name + '": ' + (uploadErr.message || String(uploadErr)));
+              continue;
+            }
+          }
+
+          const now = new Date().toISOString();
+          const newScore = {
+            id: scoreUuid,
+            title: parsed.title,
+            composer: parsed.composer,
+            arranger: parsed.arranger,
+            instrumentation: 'Piano Solo',
+            musical_key: 'C Major',
+            difficulty: 'Intermediário',
+            genre: 'Clássico',
+            tags: ['inbox'],
+            drive_file_id: driveFileId,
+            original_filename: file.name,
+            view_url: viewUrl,
+            download_url: downloadUrl,
+            is_categorized: false,
+            created_at: now,
+            updated_at: now
+          };
+
+          await persistScoreRecord(newScore, true);
+          lastCreatedId = newScore.id;
+          uploadedCount++;
+
+          const pct = Math.round(((idx + 1) / files.length) * 100);
+          progressText.textContent = 'Concluído (' + uploadedCount + '/' + files.length + '): ' + file.name;
+          progressPercent.textContent = pct + '%';
+          progressBar.style.width = pct + '%';
+        }
+
+        if (lastCreatedId) {
+          state.selectedTriageId = lastCreatedId;
+          state.useRealDriveIframe = true;
+        }
+        renderAll();
+
+        if (uploadedCount > 0) {
+          if (token && supabaseConnected) {
+            showToast('✓ ' + uploadedCount + ' PDF(s) enviado(s) ao Google Drive e gravado(s) no Supabase!');
+          } else if (token) {
+            showToast('✓ ' + uploadedCount + ' PDF(s) enviado(s) ao Google Drive!');
+          } else {
+            showToast(uploadedCount + ' PDF(s) carregado(s) em modo de pré-visualização local.');
+          }
+        }
+
+        setTimeout(function () {
+          progressBox.classList.add('hidden');
+        }, 1800);
       }
 
-      function openReaderModal(scoreId) {
-        const score = scores.find(function (s) { return s.id === scoreId; });
-        if (!score) return;
-        state.activeReaderScoreId = score.id;
-        document.getElementById('readerModalTitle').textContent = score.title;
-        document.getElementById('readerModalMeta').textContent =
-          score.composer + (score.arranger ? ' (Arr.: ' + score.arranger + ')' : '') +
-          ' • ' + (score.instrumentation || 'Piano Solo') +
-          ' • Tom: ' + (score.musical_key || 'C Major') +
-          ' • Nível: ' + (score.difficulty || 'Intermediário');
+      async function handleSimulateDemoBatch() {
+        const sampleFiles = [
+          'Franz Liszt - Liebestraum No. 3 (Edição Cortot).pdf',
+          'Chiquinha Gonzaga - Ó Abre Alas (Piano e Voz).pdf',
+          'Nobuo Uematsu - To Zanarkand (Final Fantasy X Piano Collections).pdf'
+        ];
+        for (let i = 0; i < sampleFiles.length; i++) {
+          const fname = sampleFiles[i];
+          const parsed = parseScoreFilename(fname);
+          const id = generateUUID();
+          const fakeDriveId = '1DrivePdf_Demo_' + id.slice(0, 6);
+          const now = new Date().toISOString();
+          await persistScoreRecord({
+            id: id,
+            title: parsed.title,
+            composer: parsed.composer,
+            arranger: parsed.arranger,
+            instrumentation: 'Piano Solo',
+            musical_key: 'C Major',
+            difficulty: 'Intermediário',
+            genre: 'Clássico',
+            tags: ['inbox'],
+            drive_file_id: fakeDriveId,
+            original_filename: fname,
+            view_url: 'https://drive.google.com/file/d/' + fakeDriveId + '/preview',
+            download_url: 'https://drive.google.com/uc?export=download&id=' + fakeDriveId,
+            is_categorized: false,
+            created_at: now,
+            updated_at: now
+          }, true);
+          state.selectedTriageId = id;
+        }
+        renderAll();
+        showToast('3 registros de demonstração adicionados à fila Inbox.');
+      }
 
-        const dl = document.getElementById('readerDownloadLink');
-        dl.href = score.download_url || ('https://drive.google.com/file/d/' + score.drive_file_id + '/view');
+      function renderReaderModalContent() {
+        const score = scores.find(function (s) { return s.id === state.activeReaderScoreId; });
+        if (!score) return;
 
         const body = document.getElementById('readerModalBody');
+        const hasRealDrive = isRealDriveFileId(score.drive_file_id);
+        const localBlob = localBlobUrls[score.id];
+
+        if (!state.readerForceSheetFallback && (hasRealDrive || localBlob)) {
+          const iframeSrc = localBlob
+            ? localBlob
+            : ('https://drive.google.com/file/d/' + encodeURIComponent(score.drive_file_id) + '/preview');
+          body.innerHTML =
+            '<div class="flex-1 w-full h-full flex flex-col space-y-2">' +
+              '<iframe src="' + iframeSrc + '" title="Leitor de Partitura PDF" class="w-full flex-1 min-h-[72vh] rounded-xl border border-parchment-300 bg-white shadow-inner" allow="autoplay"></iframe>' +
+              '<div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-wood-700 px-1">' +
+                '<span>Arquivo: <code>' + score.original_filename + '</code> • Drive ID: <code>' + score.drive_file_id + '</code></span>' +
+                '<span>Visualizando diretamente do Google Drive PDF Viewer</span>' +
+              '</div>' +
+            '</div>';
+          return;
+        }
+
         body.innerHTML =
           '<div class="max-w-3xl mx-auto w-full bg-[#FCF9F2] border-2 border-wood-800/30 rounded-2xl p-6 sm:p-10 shadow-inner space-y-6">' +
             '<div class="text-center border-b border-parchment-300 pb-4">' +
@@ -1445,18 +1824,47 @@
               '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄞</span><span>♩</span><span>♫</span><span>♩.</span><span>♪</span><span>𝅗𝅥</span><span>♩</span><span>♫</span></div>' +
               '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄢</span><span>𝅗𝅥</span><span>♩</span><span>♩</span><span>♫</span><span>𝅗𝅥</span><span>♩</span></div>' +
               '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄞</span><span>♫</span><span>♫</span><span>♩</span><span>𝄽</span><span>♩</span><span>♫</span><span>𝅗𝅥</span></div>' +
-              '<div class="staff-lines h-16 flex items-center px-4 border-l-2 border-r-2 border-wood-800 text-2xl text-wood-900 justify-between"><span>𝄢</span><span>♩</span><span>♫</span><span>♩</span><span>♩</span><span>𝅗𝅥</span><span>𝄽</span></div>' +
             '</div>' +
-            '<div class="bg-parchment-200/80 border border-parchment-300 rounded-xl p-3.5 text-xs text-wood-800 flex flex-wrap items-center justify-between gap-2">' +
-              '<span>Arquivo Drive vinculado: <code>' + score.original_filename + '</code></span>' +
-              '<span>Google Drive Viewer URL: <code>' + score.view_url + '</code></span>' +
+            '<div class="bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-xs text-wood-800 flex flex-wrap items-center justify-between gap-2">' +
+              '<span>⚠️ <strong>Ficha de Demonstração:</strong> este item possui um ID de exemplo (<code>' + score.drive_file_id + '</code>). Ao enviar seus próprios PDFs pela aba <strong>Inbox &amp; Upload</strong> com o Google Drive conectado, o leitor exibirá o PDF real automaticamente.</span>' +
             '</div>' +
           '</div>';
+      }
 
+      function openReaderModal(scoreId) {
+        const score = scores.find(function (s) { return s.id === scoreId; });
+        if (!score) return;
+        state.activeReaderScoreId = score.id;
+        state.readerForceSheetFallback = false;
+
+        document.getElementById('readerModalTitle').textContent = score.title;
+        document.getElementById('readerModalMeta').textContent =
+          score.composer + (score.arranger ? ' (Arr.: ' + score.arranger + ')' : '') +
+          ' • ' + (score.instrumentation || 'Piano Solo') +
+          ' • Tom: ' + (score.musical_key || 'C Major') +
+          ' • Nível: ' + (score.difficulty || 'Intermediário');
+
+        const dl = document.getElementById('readerDownloadLink');
+        const viewLink = document.getElementById('readerOpenDriveViewLink');
+        if (isRealDriveFileId(score.drive_file_id)) {
+          dl.href = 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(score.drive_file_id);
+          viewLink.href = 'https://drive.google.com/file/d/' + encodeURIComponent(score.drive_file_id) + '/view';
+          dl.classList.remove('hidden');
+          viewLink.classList.remove('hidden');
+        } else if (localBlobUrls[score.id]) {
+          dl.href = localBlobUrls[score.id];
+          dl.setAttribute('download', score.original_filename || 'partitura.pdf');
+          dl.classList.remove('hidden');
+          viewLink.classList.add('hidden');
+        } else {
+          dl.classList.add('hidden');
+          viewLink.classList.add('hidden');
+        }
+
+        renderReaderModalContent();
         document.getElementById('readerModal').classList.remove('hidden');
       }
 
-      // Eventos de Desbloqueio (Tela de Senha)
       document.getElementById('unlockForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const typed = document.getElementById('unlockPasswordInput').value.trim();
@@ -1481,7 +1889,29 @@
         document.getElementById('lockScreen').classList.remove('hidden');
       });
 
-      // Eventos de Abas
+      async function handleManualGoogleConnect() {
+        try {
+          await requestGoogleDriveToken();
+          showToast('✓ Google Drive conectado via OAuth 2.0! Pronto para enviar PDFs.');
+        } catch (err) {
+          showDiagnosticBanner(err.message || String(err));
+          showToast('⚠️ ' + (err.message || String(err)));
+        }
+      }
+
+      document.getElementById('connectGoogleDriveBtn').addEventListener('click', handleManualGoogleConnect);
+      document.getElementById('inboxConnectDriveBtn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        handleManualGoogleConnect();
+      });
+
+      document.getElementById('alertOpenConfigBtn').addEventListener('click', function () {
+        document.getElementById('openConfigModalBtn').click();
+      });
+      document.getElementById('alertDismissBtn').addEventListener('click', function () {
+        document.getElementById('apiDiagnosticAlert').classList.add('hidden');
+      });
+
       document.querySelectorAll('.nav-tab-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
           switchTab(btn.getAttribute('data-tab'));
@@ -1500,7 +1930,6 @@
         switchTab('triage');
       });
 
-      // Busca Reativa com Debounce
       let searchDebounceTimer = null;
       const searchInput = document.getElementById('globalSearchInput');
       const clearSearchBtn = document.getElementById('clearSearchBtn');
@@ -1526,7 +1955,6 @@
         renderLibraryView();
       });
 
-      // Filtros Facetados
       ['filterInstrumentation', 'filterKey', 'filterDifficulty', 'filterGenre'].forEach(function (id) {
         document.getElementById(id).addEventListener('change', function (e) {
           if (id === 'filterInstrumentation') state.filterInstrumentation = e.target.value;
@@ -1537,7 +1965,6 @@
         });
       });
 
-      // Chips de Tags
       document.querySelectorAll('.tag-chip-btn').forEach(function (chip) {
         chip.addEventListener('click', function () {
           state.activeTagChip = chip.getAttribute('data-tag-chip') || '';
@@ -1573,7 +2000,6 @@
         renderLibraryView();
       });
 
-      // Alternar Grade / Tabela
       document.getElementById('viewModeGridBtn').addEventListener('click', function () {
         state.viewMode = 'grid';
         document.getElementById('viewModeGridBtn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-wood-800 text-parchment-50 transition';
@@ -1588,11 +2014,10 @@
         renderLibraryView();
       });
 
-      // Novo Registro Manual
-      document.getElementById('newManualScoreBtn').addEventListener('click', function () {
+      document.getElementById('newManualScoreBtn').addEventListener('click', async function () {
         const now = new Date().toISOString();
         const newScore = {
-          id: 'score-' + Date.now(),
+          id: generateUUID(),
           title: 'Nova Partitura para Catalogar',
           composer: 'Compositor',
           arranger: '',
@@ -1609,14 +2034,13 @@
           created_at: now,
           updated_at: now
         };
-        persistScoreRecord(newScore, true);
+        await persistScoreRecord(newScore, true);
         state.selectedTriageId = newScore.id;
         switchTab('triage');
-        showToast('Ficha criada! Preencha os metadados ao lado do visualizador.');
+        showToast('Ficha criada! Cole o ID do arquivo do Google Drive ou envie o PDF pela aba Inbox.');
       });
 
-      // Delegação de cliques nos cards, tabela e inbox
-      document.body.addEventListener('click', function (e) {
+      document.body.addEventListener('click', async function (e) {
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
         const action = btn.getAttribute('data-action');
@@ -1641,12 +2065,11 @@
           }
           score.tags = tags;
           score.updated_at = new Date().toISOString();
-          persistScoreRecord(score, false);
+          await persistScoreRecord(score, false);
           renderAll();
         }
       });
 
-      // Upload em Lote (Drag & Drop + Input + Simulador de Lote)
       const dropZone = document.getElementById('dropZoneArea');
       const bulkInput = document.getElementById('bulkPdfInput');
 
@@ -1673,28 +2096,22 @@
         e.preventDefault();
         dropZone.classList.remove('bg-amberbrass-500/10');
         if (e.dataTransfer && e.dataTransfer.files) {
-          handleFilesSelected(e.dataTransfer.files);
+          handleRealFilesSelected(e.dataTransfer.files);
         }
       });
 
       bulkInput.addEventListener('change', function (e) {
         if (e.target.files && e.target.files.length > 0) {
-          handleFilesSelected(e.target.files);
+          handleRealFilesSelected(e.target.files);
           e.target.value = '';
         }
       });
 
       document.getElementById('simulateBatchUploadBtn').addEventListener('click', function (e) {
         e.stopPropagation();
-        const sampleFiles = [
-          { name: 'Franz Liszt - Liebestraum No. 3 (Edição Cortot).pdf', type: 'application/pdf' },
-          { name: 'Chiquinha Gonzaga - Ó Abre Alas (Piano e Voz).pdf', type: 'application/pdf' },
-          { name: 'Nobuo Uematsu - To Zanarkand (Final Fantasy X Piano Collections).pdf', type: 'application/pdf' }
-        ];
-        handleFilesSelected(sampleFiles);
+        handleSimulateDemoBatch();
       });
 
-      // Eventos da Tela de Triagem Split-Screen
       document.getElementById('triageSelectorDropdown').addEventListener('change', function (e) {
         state.selectedTriageId = e.target.value;
         renderTriageView();
@@ -1723,7 +2140,7 @@
         renderTriageView();
       });
 
-      document.getElementById('triageMetadataForm').addEventListener('submit', function (e) {
+      document.getElementById('triageMetadataForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const id = document.getElementById('triageScoreId').value;
         const current = scores.find(function (s) { return s.id === id; });
@@ -1752,9 +2169,8 @@
           updated_at: new Date().toISOString()
         });
 
-        persistScoreRecord(updated, false);
+        await persistScoreRecord(updated, false);
 
-        // Selecionar automaticamente o próximo item da fila Inbox se houver
         const remainingInbox = getInboxScores();
         if (remainingInbox.length > 0) {
           state.selectedTriageId = remainingInbox[0].id;
@@ -1765,16 +2181,22 @@
         renderAll();
       });
 
-      document.getElementById('deleteScoreFromTriageBtn').addEventListener('click', function () {
+      document.getElementById('deleteScoreFromTriageBtn').addEventListener('click', async function () {
         const id = document.getElementById('triageScoreId').value;
         scores = scores.filter(function (s) { return s.id !== id; });
         safeSetStorage(STORAGE_KEY_SCORES, scores);
+        if (supabaseClient && isValidUUID(id)) {
+          try {
+            await supabaseClient.from('scores').delete().eq('id', id);
+          } catch (err) {
+            // ignore
+          }
+        }
         state.selectedTriageId = scores[0] ? scores[0].id : null;
         renderAll();
         showToast('Registro removido do catálogo.');
       });
 
-      // Atalhos de Teclado no Desktop (Etapa 5 da Especificação)
       document.addEventListener('keydown', function (e) {
         if (state.activeTab === 'triage') {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -1790,7 +2212,11 @@
         }
       });
 
-      // Eventos do Modal de Leitura
+      document.getElementById('toggleReaderModeBtn').addEventListener('click', function () {
+        state.readerForceSheetFallback = !state.readerForceSheetFallback;
+        renderReaderModalContent();
+      });
+
       document.getElementById('closeReaderModalBtn').addEventListener('click', function () {
         document.getElementById('readerModal').classList.add('hidden');
       });
@@ -1803,13 +2229,13 @@
         }
       });
 
-      // Eventos do Modal de Configuração de APIs
       document.getElementById('openConfigModalBtn').addEventListener('click', function () {
         document.getElementById('cfgSupabaseUrl').value = appConfig.supabaseUrl || '';
         document.getElementById('cfgSupabaseKey').value = appConfig.supabaseKey || '';
         document.getElementById('cfgGoogleClientId').value = appConfig.googleClientId || '';
-        document.getElementById('cfgDriveFolderId').value = appConfig.driveFolderId || '';
+        document.getElementById('cfgDriveFolderId').value = appConfig.driveFolderId || DEFAULT_INBOX_FOLDER_ID;
         document.getElementById('cfgAppPassword').value = appConfig.appPassword || 'melos2026';
+        renderDiagnosticReport();
         document.getElementById('configModal').classList.remove('hidden');
       });
 
@@ -1817,16 +2243,47 @@
         document.getElementById('configModal').classList.add('hidden');
       });
 
-      document.getElementById('apiConfigForm').addEventListener('submit', function (e) {
+      document.getElementById('testAllConnectionsBtn').addEventListener('click', async function () {
+        await initSupabaseConnection();
+        if (appConfig.googleClientId) {
+          try {
+            await requestGoogleDriveToken();
+            showToast('✓ Conexões com Supabase e Google Drive verificadas com sucesso!');
+          } catch (err) {
+            showToast('⚠️ ' + (err.message || String(err)));
+          }
+        } else {
+          showToast('Supabase testado. Configure VITE_GOOGLE_CLIENT_ID para testar o Google Drive.');
+        }
+        renderDiagnosticReport();
+      });
+
+      document.getElementById('clearLocalMockCacheBtn').addEventListener('click', async function () {
+        try {
+          localStorage.removeItem('melos_scores_v1');
+          localStorage.removeItem('melos_config_v1');
+          localStorage.removeItem(STORAGE_KEY_SCORES);
+          localStorage.removeItem(STORAGE_KEY_CONFIG);
+        } catch (e) {
+          // ignore
+        }
+        scores = [];
+        await initSupabaseConnection();
+        renderAll();
+        showToast('✓ Cache local e itens de demonstração limpos! Exibindo apenas dados reais do Supabase.');
+      });
+
+      document.getElementById('apiConfigForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         appConfig.supabaseUrl = document.getElementById('cfgSupabaseUrl').value.trim();
         appConfig.supabaseKey = document.getElementById('cfgSupabaseKey').value.trim();
         appConfig.googleClientId = document.getElementById('cfgGoogleClientId').value.trim();
-        appConfig.driveFolderId = document.getElementById('cfgDriveFolderId').value.trim();
+        appConfig.driveFolderId = document.getElementById('cfgDriveFolderId').value.trim() || DEFAULT_INBOX_FOLDER_ID;
         appConfig.appPassword = document.getElementById('cfgAppPassword').value.trim() || 'melos2026';
         safeSetStorage(STORAGE_KEY_CONFIG, appConfig);
-        document.getElementById('configModal').classList.add('hidden');
-        initSupabaseConnection();
+        await initSupabaseConnection();
+        updateDriveStatusUI();
+        renderDiagnosticReport();
         showToast('Configurações de API e senha salvas com sucesso!');
       });
 
@@ -1843,7 +2300,6 @@
         showToast('Backup JSON exportado!');
       });
 
-      // Inicialização
       renderAll();
       initSupabaseConnection();
     })();

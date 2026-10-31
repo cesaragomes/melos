@@ -780,21 +780,6 @@
     </div>
   </div>
 
-  <!-- LOGIN PARA USAR A IA (Supabase Auth) -->
-  <div id="aiLoginModal" class="hidden fixed inset-0 z-50 bg-wood-900/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <form id="aiLoginForm" class="parchment-card w-full max-w-sm rounded-2xl p-5 space-y-3">
-      <h3 class="font-editorial text-2xl font-bold text-wood-900">Entrar para usar a IA</h3>
-      <p class="text-xs text-wood-700">A sugestão por IA é protegida por login. Use o e-mail e a senha criados para você no Supabase.</p>
-      <input id="aiLoginEmail" type="email" required autocomplete="email" placeholder="E-mail" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-      <input id="aiLoginPassword" type="password" required autocomplete="current-password" placeholder="Senha" class="w-full rounded-xl bg-parchment-50 border border-parchment-300 px-3 py-2 text-sm text-wood-900 focus:outline-none focus:ring-2 focus:ring-amberbrass-500" />
-      <p id="aiLoginError" class="hidden text-xs text-red-700"></p>
-      <div class="flex gap-2">
-        <button type="submit" id="aiLoginSubmit" class="flex-1 brass-btn py-2 px-4 rounded-xl text-sm font-semibold transition">Entrar</button>
-        <button type="button" id="aiLoginCancel" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-parchment-200 hover:bg-parchment-300 text-wood-800 border border-parchment-300 transition">Cancelar</button>
-      </div>
-    </form>
-  </div>
-
   <!-- TOAST DE NOTIFICAÇÃO -->
   <div id="toastNotification" class="hidden fixed bottom-5 right-5 z-50 wood-header text-parchment-50 px-4 py-3 rounded-xl shadow-xl border border-amberbrass-400 text-xs font-medium flex items-center gap-2.5 max-w-sm">
     <span class="text-amberbrass-400 text-base">♪</span>
@@ -2025,7 +2010,6 @@
       const AI_FUNCTION_NAME = 'suggest-metadata';
       const AI_PAGES_TO_SEND = 2;                    // quantas páginas iniciais enviar
       const AI_MAX_SEND_BYTES = 8 * 1024 * 1024;     // limite do que é enviado
-      let aiLoginPending = null;
 
       function aiSetBusy(busy, hint) {
         const btn = document.getElementById('aiSuggestBtn');
@@ -2100,21 +2084,6 @@
         }
       }
 
-      // Garante que existe um usuário logado no Supabase Auth (abre o modal se não houver).
-      async function aiEnsureSession() {
-        if (!supabaseClient) {
-          throw new Error('O Supabase não está conectado. Verifique a conexão.');
-        }
-        const res = await supabaseClient.auth.getSession();
-        if (res && res.data && res.data.session) return res.data.session;
-        return new Promise(function (resolve, reject) {
-          aiLoginPending = { resolve: resolve, reject: reject };
-          document.getElementById('aiLoginError').classList.add('hidden');
-          document.getElementById('aiLoginModal').classList.remove('hidden');
-          document.getElementById('aiLoginEmail').focus();
-        });
-      }
-
       function aiSetSelect(id, value) {
         if (!value) return false;
         const el = document.getElementById(id);
@@ -2176,7 +2145,9 @@
           if (trimmed.length > AI_MAX_SEND_BYTES) {
             throw new Error('As páginas são muito pesadas para enviar. Reduza AI_PAGES_TO_SEND para 1 no código.');
           }
-          await aiEnsureSession();
+          if (!supabaseClient) {
+            throw new Error('O Supabase não está conectado. Verifique a conexão.');
+          }
           aiSetBusy(true, 'Consultando o Gemini...');
           const res = await supabaseClient.functions.invoke(AI_FUNCTION_NAME, {
             body: { pdf_base64: aiUint8ToBase64(trimmed), filename: score.original_filename || '' }
@@ -2208,36 +2179,6 @@
       }
 
       document.getElementById('aiSuggestBtn').addEventListener('click', suggestMetadataWithAI);
-
-      document.getElementById('aiLoginForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const errEl = document.getElementById('aiLoginError');
-        const submit = document.getElementById('aiLoginSubmit');
-        errEl.classList.add('hidden');
-        submit.disabled = true;
-        try {
-          const res = await supabaseClient.auth.signInWithPassword({
-            email: document.getElementById('aiLoginEmail').value.trim(),
-            password: document.getElementById('aiLoginPassword').value
-          });
-          if (res.error || !res.data || !res.data.session) {
-            throw new Error((res.error && res.error.message) || 'Não foi possível entrar.');
-          }
-          document.getElementById('aiLoginPassword').value = '';
-          document.getElementById('aiLoginModal').classList.add('hidden');
-          if (aiLoginPending) { aiLoginPending.resolve(res.data.session); aiLoginPending = null; }
-        } catch (err) {
-          errEl.textContent = 'Login falhou: ' + (err.message || err);
-          errEl.classList.remove('hidden');
-        } finally {
-          submit.disabled = false;
-        }
-      });
-
-      document.getElementById('aiLoginCancel').addEventListener('click', function () {
-        document.getElementById('aiLoginModal').classList.add('hidden');
-        if (aiLoginPending) { aiLoginPending.reject(new Error('Login cancelado.')); aiLoginPending = null; }
-      });
 
       document.getElementById('triageMetadataForm').addEventListener('submit', async function (e) {
         e.preventDefault();
